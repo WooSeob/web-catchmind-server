@@ -7,10 +7,10 @@ export class Guessing extends State {
     super();
     this.roomID = roomID;
     this.word = word;
+    this.Timeout = 7;
   }
   private score: Map<String, number> = new Map();
   private word: String;
-  private Timeout: number = 7;
 
   Transition(resolve): void {
     super.Transition(resolve);
@@ -28,7 +28,7 @@ export class Guessing extends State {
       this.io.sockets.in(this.roomID).emit("game-cmd", msg);
 
       console.log(this.score);
-      resolve(new Resulting(this.roomID, this.score));
+      this.suspendAllTask(new Resulting(this.roomID, this.score));
     }, this.Timeout * 1000);
   }
   TurnDo(user: User, msg: any): void {
@@ -56,6 +56,6 @@ export class Guessing extends State {
       data: this.score,
     };
     this.io.sockets.in(this.roomID).emit("game-cmd", msg);
-    this.mResolve(new Resulting(this.roomID, this.score));
+    this.suspendAllTask(new Resulting(this.roomID, this.score));
   }
 }

@@ -7,9 +7,9 @@ class Guessing extends Phase_1.State {
     constructor(roomID, word) {
         super();
         this.score = new Map();
-        this.Timeout = 7;
         this.roomID = roomID;
         this.word = word;
+        this.Timeout = 7;
     }
     Transition(resolve) {
         super.Transition(resolve);
@@ -25,7 +25,7 @@ class Guessing extends Phase_1.State {
             };
             this.io.sockets.in(this.roomID).emit("game-cmd", msg);
             console.log(this.score);
-            resolve(new Resulting_1.Resulting(this.roomID, this.score));
+            this.suspendAllTask(new Resulting_1.Resulting(this.roomID, this.score));
         }, this.Timeout * 1000);
     }
     TurnDo(user, msg) {
@@ -51,7 +51,7 @@ class Guessing extends Phase_1.State {
             data: this.score,
         };
         this.io.sockets.in(this.roomID).emit("game-cmd", msg);
-        this.mResolve(new Resulting_1.Resulting(this.roomID, this.score));
+        this.suspendAllTask(new Resulting_1.Resulting(this.roomID, this.score));
     }
 }
 exports.Guessing = Guessing;

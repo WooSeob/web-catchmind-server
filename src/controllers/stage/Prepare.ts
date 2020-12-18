@@ -8,6 +8,7 @@ export class Prepare extends State {
   constructor(roomID: string) {
     super();
     this.roomID = roomID;
+    this.Timeout = 5;
   }
   // 1. 플레이어가 선택을 했을 때.
   // 2. TimeOut 되었을때. -> 랜덤으로 그냥 하나 선택함.
@@ -39,14 +40,16 @@ export class Prepare extends State {
         data: this.selectedWord,
       };
       this.io.sockets.in(this.roomID).emit("game-cmd", msg);
-      resolve(new Guessing(this.roomID, this.selectedWord));
+      this.suspendAllTask(new Guessing(this.roomID, this.selectedWord));
     }, this.Timeout * 1000);
   }
   TurnDo(user: User, msg: any) {
     //1
     //에러트래핑
     super.stopPhase();
+    console.log(msg);
     this.selectedWord = this.words[msg];
+    console.log("selected is " + this.selectedWord);
 
     let echoMsg = {
       type: "transition",
@@ -54,7 +57,7 @@ export class Prepare extends State {
       data: this.selectedWord,
     };
     this.io.sockets.in(this.roomID).emit("game-cmd", echoMsg);
-    this.mResolve(new Guessing(this.roomID, this.selectedWord));
+    this.suspendAllTask(new Guessing(this.roomID, this.selectedWord));
   }
 
   public stopPhase(): void {
@@ -68,10 +71,9 @@ export class Prepare extends State {
       data: nullScore,
     };
     this.io.sockets.in(this.roomID).emit("game-cmd", msg);
-    this.mResolve(new Resulting(this.roomID, nullScore));
+    this.suspendAllTask(new Resulting(this.roomID, nullScore));
   }
 
   private selectedWord;
   private words;
-  private Timeout: number = 5;
 }

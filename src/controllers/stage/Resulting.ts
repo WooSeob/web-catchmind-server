@@ -6,10 +6,13 @@ export class Resulting extends State {
     super();
     this.roomID = roomID;
     this.score = score;
+    this.Timeout = 3;
   }
   // 1. 모든 플레이어가 OK를 눌렀을 때
   // 2. Timeout 되었을때
   Transition(resolve): void {
+    super.Transition(resolve);
+
     let sendData = new Array();
     for (let name of this.score.keys()) {
       sendData.push({ name: name, score: this.score.get(name) });
@@ -22,13 +25,8 @@ export class Resulting extends State {
 
     setTimeout(() => {
       console.log("resulting 종료.");
-      resolve(null);
+      this.suspendAllTask(null);
     }, this.Timeout * 1000);
   }
-
-  //   TurnDo(): void {
-  //     console.log("Resulting 시작");
-  //   }
   private score: Map<String, number>;
-  private Timeout: number = 3;
 }

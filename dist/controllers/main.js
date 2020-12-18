@@ -76,9 +76,9 @@ class Room {
             io.sockets.in(this.roomID).emit("user-list", userListData);
         }
     }
-    onStart(user) {
+    onStart(user, gameSet) {
         if (user == this.hostUser && !this.game.inGame()) {
-            this.game.setGame(this.userList, 2, 10);
+            this.game.setGame(this.userList, gameSet.round, gameSet.timeout);
             //게임 시작하니까 리스트 전달
             let io = SocketHandler.getInstance().getIo();
             let users = this.userList.map((u) => u.getName());
@@ -111,6 +111,15 @@ class Room {
             .map((u) => u.getName());
         //현재 리스트 전달
         io.sockets.in(this.roomID).emit("user-list", userListData);
+    }
+    onChat(user, msg) {
+        console.log("chat broadcast");
+        let io = SocketHandler.getInstance().getIo();
+        let broadcastMsg = {
+            from: user.getName(),
+            data: msg,
+        };
+        io.sockets.in(this.roomID).emit("chat-msg", broadcastMsg);
     }
 }
 class SocketHandler {
@@ -156,9 +165,9 @@ class SocketHandler {
             room.onDisconnect(thisUser);
         });
         socket.on("game-cmd", (msg) => {
-            if (msg == "start") {
+            if (msg.type == "start") {
                 console.log("game start.");
-                room.onStart(thisUser);
+                room.onStart(thisUser, msg.data);
             }
         });
         socket.on("game-msg", (msg) => {
@@ -167,6 +176,9 @@ class SocketHandler {
         // 클라이언트로부터의 메시지가 수신되면
         socket.on("draw cmd", (drawData) => {
             room.onGameMsg(thisUser, drawData);
+        });
+        socket.on("chat-msg", (msg) => {
+            room.onChat(thisUser, msg);
         });
     }
 }

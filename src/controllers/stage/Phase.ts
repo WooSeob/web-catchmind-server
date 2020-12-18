@@ -14,6 +14,7 @@ export abstract class State implements Phase {
     this.io = SocketHandler.getInstance().getIo();
   }
   Do(): Promise<Phase> {
+    this.timer();
     let nextPhase = new Promise<Phase>((resolve, reject) => {
       try {
         this.Transition(resolve);
@@ -31,8 +32,25 @@ export abstract class State implements Phase {
   Transition(resolve): void {
     this.mResolve = resolve;
   }
+  timer(): void {
+    this.RemainTimeTimer = setInterval(() => {
+      let timerMsg = {
+        type: "timer",
+        data: --this.Timeout,
+      };
+      this.io.sockets.in(this.roomID).emit("game-msg", timerMsg);
+    }, 1000);
+  }
 
-  protected mResolve;
+  suspendAllTask(nextPhase: Phase): void {
+    clearTimeout(this.RemainTimeTimer);
+    clearTimeout(this.TransitionTimer);
+    this.mResolve(nextPhase);
+  }
+
+  protected Timeout: number = 3;
+  private mResolve;
+  protected RemainTimeTimer: NodeJS.Timeout;
   protected TransitionTimer: NodeJS.Timeout;
   protected roomID: string;
   protected io: socket_io.Server;
