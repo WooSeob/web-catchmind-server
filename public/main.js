@@ -637,8 +637,8 @@ class RoomComponent {
         }
     }
     ngOnInit() {
-        // this.socket = io('ws://localhost:9999');
-        this.socket = Object(socket_io_client__WEBPACK_IMPORTED_MODULE_2__["io"])('ws://catchm1nd.herokuapp.com/');
+        this.socket = Object(socket_io_client__WEBPACK_IMPORTED_MODULE_2__["io"])('ws://localhost:9999');
+        // this.socket = io('ws://catchm1nd.herokuapp.com/');
         console.log(this.socket);
         var canvas = document.getElementById('canvas');
         this.ctx = canvas.getContext('2d');
@@ -769,19 +769,22 @@ class RoomComponent {
         canvas.addEventListener('mousemove', function (e) {
             this.handleMouseEnter(e);
         }.bind(this), false);
-        canvas.addEventListener('touchmove', function (e) {
-            this.handleMouseEnter(e);
-        }.bind(this), false);
         canvas.addEventListener('mousedown', function (e) {
-            this.mousedown = true;
-        }.bind(this), false);
-        canvas.addEventListener('touchstart', function (e) {
             this.mousedown = true;
         }.bind(this), false);
         canvas.addEventListener('mouseup', function (e) {
             this.mousedown = false;
         }.bind(this), false);
+        canvas.addEventListener('touchstart', function (e) {
+            e.preventDefault();
+            this.mousedown = true;
+        }.bind(this), false);
+        canvas.addEventListener('touchmove', function (e) {
+            e.preventDefault();
+            this.handleMouseEnter(e);
+        }.bind(this), false);
         canvas.addEventListener('touchend', function (e) {
+            e.preventDefault();
             this.mousedown = false;
         }.bind(this), false);
     }
