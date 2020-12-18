@@ -637,8 +637,8 @@ class RoomComponent {
         }
     }
     ngOnInit() {
-        this.socket = Object(socket_io_client__WEBPACK_IMPORTED_MODULE_2__["io"])('ws://localhost:9999');
-        // this.socket = io('ws://catchm1nd.herokuapp.com/');
+        // this.socket = io('ws://localhost:9999');
+        this.socket = Object(socket_io_client__WEBPACK_IMPORTED_MODULE_2__["io"])('ws://catchm1nd.herokuapp.com/');
         console.log(this.socket);
         var canvas = document.getElementById('canvas');
         this.ctx = canvas.getContext('2d');
