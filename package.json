@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node dist/www.js",
-    "postinstall": "tsc && mv -i -v public dist/ && rm -v -rf src",
+    "tsc" : "tsc",
+    "postinstall": "npm run tsc && mv -i -v public dist/ && rm -v -rf src",
     "watch-node": "nodemon dist/www.js",
     "watch-ts": "tsc -w",
     "deploy": "git add . && git commit -m Heroku && git push heroku master"
