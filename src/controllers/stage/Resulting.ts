@@ -25,7 +25,7 @@ export class Resulting extends State {
 
     setTimeout(() => {
       console.log("resulting 종료.");
-      this.suspendAllTask(null);
+      this.suspendAllTask(this.score);
     }, this.Timeout * 1000);
   }
   private score: Map<String, number>;

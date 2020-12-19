@@ -8,6 +8,21 @@ class PlayerQueue {
         this.current = null;
         this.length = 0;
     }
+    getUserByName(name) {
+        let found = null;
+        let node = this.head;
+        while (this.head) {
+            if (node.user.getName() == name) {
+                found = node.user;
+                break;
+            }
+            node = node.next;
+            if (node == this.head) {
+                break;
+            }
+        }
+        return found;
+    }
     getAllList() {
         let users = [];
         let node = this.head;

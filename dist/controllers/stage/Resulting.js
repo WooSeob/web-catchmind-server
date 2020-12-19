@@ -24,7 +24,7 @@ class Resulting extends Phase_1.State {
         this.io.sockets.in(this.roomID).emit("game-msg", msg);
         setTimeout(() => {
             console.log("resulting 종료.");
-            this.suspendAllTask(null);
+            this.suspendAllTask(this.score);
         }, this.Timeout * 1000);
     }
 }

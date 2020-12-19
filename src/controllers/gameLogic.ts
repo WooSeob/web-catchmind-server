@@ -1,9 +1,11 @@
-import { User, WORD_POOL } from "./data";
+import { User, WORD_POOL, Score } from "./data";
 import { SocketHandler } from "./main";
 import socket_io, { Server } from "socket.io";
 import { Prepare } from "./stage/Prepare";
 import { Phase } from "./stage/Phase";
 import { PlayerQueue } from "./util";
+import { Guessing } from "./stage/Guessing";
+import { Resulting } from "./stage/Resulting";
 
 class Turn {
   constructor(turn: User, roomID: string, remainTIme: number) {
@@ -43,12 +45,13 @@ class Turn {
 
   private transitionPhase(resolve): void {
     this.currentPhase.Do().then((nextPhase: Phase) => {
-      if (nextPhase) {
+      if (nextPhase instanceof Guessing || nextPhase instanceof Resulting) {
         this.currentPhase = nextPhase;
         this.transitionPhase(resolve);
       } else {
         //한 턴 종료
-        resolve(1);
+        let result = nextPhase;
+        resolve(result);
       }
     });
   }
@@ -79,6 +82,8 @@ export class Game {
     if (!this.isInGame) {
       this.participants = new PlayerQueue();
       users.forEach((user) => {
+        user.isParticipant = true;
+        user.score = new Score();
         this.participants.addHead(user);
       });
       this.EndRound = round;
@@ -96,7 +101,7 @@ export class Game {
       let io: socket_io.Server = SocketHandler.getInstance().getIo();
       let startMsg = {
         type: "gamestart",
-        data: null,
+        data: this.participants.getAllList().map((u) => u.getName()),
       };
       io.sockets.in(this.roomID).emit("game-cmd", startMsg);
 
@@ -132,9 +137,15 @@ export class Game {
     };
     io.sockets.in(this.roomID).emit("game-cmd", transitionMsg);
 
-    this.turn.startPhase().then((result) => {
+    this.turn.startPhase().then((result: Map<String, number>) => {
       //한턴 끝나면
       console.log("턴 종료.");
+      result.forEach(
+        function (score, name) {
+          this.participants.getUserByName(name).score.turnClear();
+        }.bind(this)
+      );
+
       let nextPlayer: User = this.nextTurn();
       if (nextPlayer) {
         this.turn = new Turn(nextPlayer, this.roomID, this.timePerTurn);

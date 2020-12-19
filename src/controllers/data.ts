@@ -3,21 +3,23 @@ import socket_io, { Server } from "socket.io";
 export class User {
   constructor(name: String, socket: socket_io.Socket, roomID: string) {
     this.name = name;
-    this.socket = socket;
+    // this.socket = socket;
     this.roomID = roomID;
   }
+  isParticipant: boolean = false;
+  score: Score = null;
   private roomID: string;
   private name: String;
-  private socket: socket_io.Socket;
+  // private socket: socket_io.Socket;
   public setRoomID(roomID: string): void {
     this.roomID = roomID;
   }
   public getRoomID(): string {
     return this.roomID;
   }
-  public getSocket(): socket_io.Socket {
-    return this.socket;
-  }
+  // public getSocket(): socket_io.Socket {
+  //   return this.socket;
+  // }
   public getName(): String {
     return this.name;
   }
@@ -42,3 +44,22 @@ export const WORD_POOL: String[] = [
   "저스디스",
   "스카이민혁",
 ];
+
+export class Score {
+  constructor() {
+    this.score = 0;
+    this.correct = false;
+    this.turn = false;
+  }
+
+  matched(score: number) {
+    this.correct = true;
+    this.score += score;
+  }
+  turnClear() {
+    this.correct = false;
+  }
+  score: number;
+  correct: boolean;
+  turn: boolean;
+}

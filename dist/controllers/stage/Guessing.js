@@ -35,10 +35,14 @@ class Guessing extends Phase_1.State {
         let PLUS_SCORE = 100;
         if (this.word == msg && !this.score.get(user.getRoomID())) {
             this.score.set(user.getName(), PLUS_SCORE);
+            user.score.matched(PLUS_SCORE);
             console.log(user.getName() + "가 맞췄습니다.");
             let msg = {
                 type: "system",
-                data: user.getName() + "가 맞췄습니다.",
+                data: {
+                    user: user.getName(),
+                    score: PLUS_SCORE,
+                },
             };
             this.io.sockets.in(this.roomID).emit("game-msg", msg);
         }

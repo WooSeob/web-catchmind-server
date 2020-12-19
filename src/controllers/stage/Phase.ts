@@ -42,7 +42,7 @@ export abstract class State implements Phase {
     }, 1000);
   }
 
-  suspendAllTask(nextPhase: Phase): void {
+  suspendAllTask(nextPhase: Phase | Map<String, number>): void {
     clearTimeout(this.RemainTimeTimer);
     clearTimeout(this.TransitionTimer);
     this.mResolve(nextPhase);

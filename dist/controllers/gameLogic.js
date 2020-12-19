@@ -1,9 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Game = void 0;
+const data_1 = require("./data");
 const main_1 = require("./main");
 const Prepare_1 = require("./stage/Prepare");
 const util_1 = require("./util");
+const Guessing_1 = require("./stage/Guessing");
+const Resulting_1 = require("./stage/Resulting");
 class Turn {
     constructor(turn, roomID, remainTIme) {
         this.turn = turn;
@@ -36,13 +39,14 @@ class Turn {
     }
     transitionPhase(resolve) {
         this.currentPhase.Do().then((nextPhase) => {
-            if (nextPhase) {
+            if (nextPhase instanceof Guessing_1.Guessing || nextPhase instanceof Resulting_1.Resulting) {
                 this.currentPhase = nextPhase;
                 this.transitionPhase(resolve);
             }
             else {
                 //한 턴 종료
-                resolve(1);
+                let result = nextPhase;
+                resolve(result);
             }
         });
     }
@@ -65,6 +69,8 @@ class Game {
         if (!this.isInGame) {
             this.participants = new util_1.PlayerQueue();
             users.forEach((user) => {
+                user.isParticipant = true;
+                user.score = new data_1.Score();
                 this.participants.addHead(user);
             });
             this.EndRound = round;
@@ -81,7 +87,7 @@ class Game {
             let io = main_1.SocketHandler.getInstance().getIo();
             let startMsg = {
                 type: "gamestart",
-                data: null,
+                data: this.participants.getAllList().map((u) => u.getName()),
             };
             io.sockets.in(this.roomID).emit("game-cmd", startMsg);
             this.isGameReady = false;
@@ -114,6 +120,9 @@ class Game {
         this.turn.startPhase().then((result) => {
             //한턴 끝나면
             console.log("턴 종료.");
+            result.forEach(function (score, name) {
+                this.participants.getUserByName(name).score.turnClear();
+            }.bind(this));
             let nextPlayer = this.nextTurn();
             if (nextPlayer) {
                 this.turn = new Turn(nextPlayer, this.roomID, this.timePerTurn);

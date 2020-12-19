@@ -7,6 +7,21 @@ export class PlayerQueue {
   private current: Player = null;
   private length: number = 0;
 
+  public getUserByName(name: String): User {
+    let found: User = null;
+    let node: Player = this.head;
+    while (this.head) {
+      if (node.user.getName() == name) {
+        found = node.user;
+        break;
+      }
+      node = node.next;
+      if (node == this.head) {
+        break;
+      }
+    }
+    return found;
+  }
   public getAllList(): User[] {
     let users: User[] = [];
     let node: Player = this.head;

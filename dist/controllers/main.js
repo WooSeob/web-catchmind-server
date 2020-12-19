@@ -14,6 +14,15 @@ class Room {
         this.hostUser = hostUser;
         this.game = new gameLogic_1.Game(roomID);
     }
+    getUsersInfo() {
+        // let users = this.userList.map((u) => u.getName());
+        let userListData = {
+            host: this.hostUser.getName(),
+            users: this.userList,
+            participants: this.game.getParticipants().map((u) => u.getName()),
+        };
+        return userListData;
+    }
     removeUser(user) {
         let tempList = new Array();
         this.userList.forEach((u) => {
@@ -67,13 +76,17 @@ class Room {
                 io.sockets.in(this.roomID).emit("sys-msg", hostChangedMsg);
             }
             //나갔으니까 다시 리스트 전달
-            let users = this.userList.map((u) => u.getName());
-            let userListData = {
-                host: this.hostUser.getName(),
-                users: users,
-                participants: this.game.getParticipants().map((u) => u.getName()),
+            // let users = this.userList.map((u) => u.getName());
+            // let userListData = {
+            //   host: this.hostUser.getName(),
+            //   users: users,
+            //   participants: this.game.getParticipants().map((u) => u.getName()),
+            // };
+            let userLeaveData = {
+                type: "user-leave",
+                data: user.getName(),
             };
-            io.sockets.in(this.roomID).emit("user-list", userListData);
+            io.sockets.in(this.roomID).emit("sys-msg", userLeaveData);
         }
     }
     onStart(user, gameSet) {
@@ -92,7 +105,9 @@ class Room {
         }
     }
     onGameMsg(user, msg) {
-        this.game.MsgHandler(user, msg);
+        if (user.isParticipant) {
+            this.game.MsgHandler(user, msg);
+        }
     }
     onJoin(user) {
         // 전달받은 클라이언트 정보를 저장
@@ -100,17 +115,16 @@ class Room {
         let io = SocketHandler.getInstance().getIo();
         console.log("user" + user.getName() + " has joined");
         this.userList.push(user);
-        let users = this.userList.map((u) => u.getName());
-        let userListData = {
-            host: this.hostUser.getName(),
-            users: users,
-            participants: null,
+        // let users = this.userList.map((u) => u.getName());
+        // userListData.participants = this.game
+        //   .getParticipants()
+        //   .map((u) => u.getName());
+        //새로운 유저 전달
+        let userJoinData = {
+            type: "user-join",
+            data: user.getName(),
         };
-        userListData.participants = this.game
-            .getParticipants()
-            .map((u) => u.getName());
-        //현재 리스트 전달
-        io.sockets.in(this.roomID).emit("user-list", userListData);
+        io.sockets.in(this.roomID).emit("sys-msg", userJoinData);
     }
     onChat(user, msg) {
         console.log("chat broadcast");
@@ -160,6 +174,11 @@ class SocketHandler {
             }
             socket.join(RoomID);
             room.onJoin(thisUser);
+            let welcomeMsg = {
+                type: "user-welcome",
+                data: room.getUsersInfo(),
+            };
+            socket.emit("sys-msg", welcomeMsg);
         });
         socket.on("disconnect", () => {
             room.onDisconnect(thisUser);
