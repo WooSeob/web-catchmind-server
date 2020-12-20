@@ -1071,6 +1071,10 @@ class RoomComponent {
     toggleMouseDown(b) {
         this.mousedown = b;
     }
+    touchStart(x, y) {
+        this.touchStartX = x;
+        this.touchStartY = y;
+    }
     handleMouseEnter(e) {
         if (this.mousedown &&
             this.gameHandler.myTurn &&
@@ -1085,7 +1089,7 @@ class RoomComponent {
             }
             else if (e instanceof TouchEvent) {
                 console.log(e);
-                drawData = { X: e.touches[0].pageX, Y: e.touches[0].pageY };
+                drawData = { X: e.touches[0].pageX - this.touchStartX, Y: e.touches[0].pageY - this.touchStartY };
             }
             // console.log(e)
             // console.log('X: ' + e.pageX + ', Y: ' + e.pageY); //-> "mouseenter"
@@ -1186,8 +1190,7 @@ class RoomComponent {
         }.bind(this), false);
         canvas.addEventListener('touchstart', function (e) {
             e.preventDefault();
-            console.log("touchstart");
-            console.log(e);
+            this.touchStart(e.touches[0].pageX, e.touches[0].pageY);
             this.mousedown = true;
         }.bind(this), false);
         canvas.addEventListener('touchmove', function (e) {
