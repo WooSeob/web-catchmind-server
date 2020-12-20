@@ -749,7 +749,7 @@ class AppComponent {
     }
 }
 AppComponent.ɵfac = function AppComponent_Factory(t) { return new (t || AppComponent)(); };
-AppComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineComponent"]({ type: AppComponent, selectors: [["app-root"]], decls: 12, vars: 0, consts: [[1, "navbar", "navbar-dark", "bg-dark"], [1, "container"], [1, "container-fluid"], ["href", "#", 1, "navbar-brand"], [1, "container", 2, "background-color", "snow"], [1, "row"], [1, "col-12"]], template: function AppComponent_Template(rf, ctx) { if (rf & 1) {
+AppComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineComponent"]({ type: AppComponent, selectors: [["app-root"]], decls: 13, vars: 0, consts: [[1, "navbar", "navbar-dark", "bg-dark"], [1, "container"], [1, "container-fluid"], ["href", "#", 1, "navbar-brand"], [1, "container", 2, "background-color", "snow"], [2, "margin-left", "10px", "margin-right", "10px", "padding-top", "10px"], [1, "row"], [1, "col-12"]], template: function AppComponent_Template(rf, ctx) { if (rf & 1) {
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](0, "nav", 0);
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](1, "div", 1);
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](2, "div", 2);
@@ -760,12 +760,14 @@ AppComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineCompo
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](5, "div", 4);
-        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelement"](6, "router-outlet");
-        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](7, "footer");
-        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](8, "div", 5);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](6, "div", 5);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelement"](7, "router-outlet");
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](8, "footer");
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](9, "div", 6);
-        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](10, "small");
-        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtext"](11, "\u00A9 Developed By WooSeob Byun");
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](10, "div", 7);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](11, "small");
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtext"](12, "\u00A9 Developed By WooSeob Byun");
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
@@ -901,10 +903,8 @@ class CanvasComponent {
     ngOnInit() { }
 }
 CanvasComponent.ɵfac = function CanvasComponent_Factory(t) { return new (t || CanvasComponent)(); };
-CanvasComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineComponent"]({ type: CanvasComponent, selectors: [["app-canvas"]], decls: 2, vars: 0, consts: [["id", "canvas", 2, "width", "630px", "border", "2px solid blue"]], template: function CanvasComponent_Template(rf, ctx) { if (rf & 1) {
-        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](0, "div");
-        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelement"](1, "canvas", 0);
-        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
+CanvasComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineComponent"]({ type: CanvasComponent, selectors: [["app-canvas"]], decls: 1, vars: 0, consts: [["id", "canvas", 2, "width", "100%", "border", "2px solid blue"]], template: function CanvasComponent_Template(rf, ctx) { if (rf & 1) {
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelement"](0, "canvas", 0);
     } }, styles: ["\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJzcmMvYXBwL2NhbnZhcy9jYW52YXMuY29tcG9uZW50LmNzcyJ9 */"] });
 /*@__PURE__*/ (function () { _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵsetClassMetadata"](CanvasComponent, [{
         type: _angular_core__WEBPACK_IMPORTED_MODULE_0__["Component"],
@@ -1212,7 +1212,7 @@ class RoomComponent {
     }
 }
 RoomComponent.ɵfac = function RoomComponent_Factory(t) { return new (t || RoomComponent)(_angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdirectiveInject"](_angular_router__WEBPACK_IMPORTED_MODULE_4__["ActivatedRoute"])); };
-RoomComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineComponent"]({ type: RoomComponent, selectors: [["ng-component"]], decls: 32, vars: 12, consts: [[1, "row"], [1, "col-md-10"], [1, "col-md-2"], [4, "ngIf"], ["id", "host-section", "style", "\n    border: 1px solid lightgray;\n    margin-bottom: 7px;\n    background-color: whitesmoke;\n  ", 4, "ngIf"], [1, "col-12", "col-md-2", 2, "padding", "0px", "padding-left", "10px"], [2, "padding", "0px", "background-color", "whitesmoke", 3, "users", "hostUser"], [1, "col-12", "col-md-7", 2, "margin", "0px", "padding-left", "5px", "padding-right", "5px"], [2, "border", "1px solid lightgray"], ["id", "word-section"], ["id", "word-select", 4, "ngIf"], [1, "input-group", "mb-3"], ["type", "text", "placeholder", "Endter Guess!", "aria-describedby", "basic-addon2", 1, "form-control", 3, "ngModel", "ngModelChange"], [1, "input-group-append"], ["type", "button", 1, "btn", "btn-outline-primary", 3, "click"], [1, "col-12", "col-md-3", 2, "margin", "0px", "padding-left", "5px", "padding-right", "10px"], [2, "border", "1px solid lightgray", "background-color", "whitesmoke"], [3, "chatContainer"], ["type", "text", "placeholder", "\uBA54\uC2DC\uC9C0\uB97C \uC785\uB825\uD558\uC138\uC694.", "aria-describedby", "basic-addon2", 1, "form-control", 3, "ngModel", "ngModelChange"], ["id", "host-section", 2, "border", "1px solid lightgray", "margin-bottom", "7px", "background-color", "whitesmoke"], ["type", "button", "class", "btn btn-primary", 3, "click", 4, "ngIf"], ["type", "button", 1, "btn", "btn-primary", 3, "click"], ["id", "word-select"]], template: function RoomComponent_Template(rf, ctx) { if (rf & 1) {
+RoomComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineComponent"]({ type: RoomComponent, selectors: [["ng-component"]], decls: 32, vars: 12, consts: [[1, "row"], [1, "col-md-10"], [1, "col-md-2"], [4, "ngIf"], ["id", "host-section", "style", "\n    border: 1px solid lightgray;\n    margin-bottom: 7px;\n    background-color: whitesmoke;\n  ", 4, "ngIf"], [1, "col-12", "col-md-2"], [2, "padding", "0px", "background-color", "whitesmoke", 3, "users", "hostUser"], [1, "col-12", "col-md-7", 2, "margin", "0px", "padding-left", "5px", "padding-right", "5px"], [2, "border", "1px solid lightgray", "height", "100%"], ["id", "word-section"], ["id", "word-select", 4, "ngIf"], [1, "input-group", "mb-3"], ["type", "text", "placeholder", "Endter Guess!", "aria-describedby", "basic-addon2", 1, "form-control", 3, "ngModel", "ngModelChange"], [1, "input-group-append"], ["type", "button", 1, "btn", "btn-outline-primary", 3, "click"], [1, "col-12", "col-md-3", 2, "margin", "0px", "padding-left", "5px"], [2, "border", "1px solid lightgray", "background-color", "whitesmoke"], [3, "chatContainer"], ["type", "text", "placeholder", "\uBA54\uC2DC\uC9C0\uB97C \uC785\uB825\uD558\uC138\uC694.", "aria-describedby", "basic-addon2", 1, "form-control", 3, "ngModel", "ngModelChange"], ["id", "host-section", 2, "border", "1px solid lightgray", "margin-bottom", "7px", "background-color", "whitesmoke"], ["type", "button", "class", "btn btn-primary", 3, "click", 4, "ngIf"], ["type", "button", 1, "btn", "btn-primary", 3, "click"], ["id", "word-select"]], template: function RoomComponent_Template(rf, ctx) { if (rf & 1) {
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](0, "div", 0);
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](1, "div", 1);
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](2, "h3");
