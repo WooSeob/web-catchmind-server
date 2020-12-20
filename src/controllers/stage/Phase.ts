@@ -11,7 +11,8 @@ export interface Phase {
 
 export abstract class State implements Phase {
   constructor() {
-    this.io = SocketHandler.getInstance().getIo();
+    this.sHandler = SocketHandler.getInstance()
+    this.io = this.sHandler.getIo();
   }
   Do(): Promise<Phase> {
     this.timer();
@@ -54,4 +55,5 @@ export abstract class State implements Phase {
   protected TransitionTimer: NodeJS.Timeout;
   protected roomID: string;
   protected io: socket_io.Server;
+  protected sHandler: SocketHandler;
 }

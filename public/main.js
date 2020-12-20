@@ -298,6 +298,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Phase", function() { return Phase; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "UserContainer", function() { return UserContainer; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "game_cmd_Handler", function() { return game_cmd_Handler; });
+/* harmony import */ var _message__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./message */ "oqF8");
+
 class Draw {
 }
 class User {
@@ -451,6 +453,7 @@ class UserContainer {
             if (user.getName() == username) {
                 user.score.matched(score);
             }
+            console.log("score : ", user.score.score);
         }
     }
     resetCorrect() {
@@ -568,6 +571,7 @@ class game_cmd_Handler {
         }
     }
     changePhase(cmd) {
+        // console.log(cmd)
         this.timerRun = true;
         this.phase = cmd.state;
         this.isGuess = false;
@@ -575,22 +579,22 @@ class game_cmd_Handler {
         this.isPrepare = false;
         this.isResult = false;
         switch (cmd.state) {
-            case Phase.ready:
+            case _message__WEBPACK_IMPORTED_MODULE_0__["PhaseType"].ready:
                 this.isReady = true;
                 break;
-            case Phase.prepare:
+            case _message__WEBPACK_IMPORTED_MODULE_0__["PhaseType"].prepare:
                 this.isPrepare = true;
                 break;
-            case Phase.guess:
+            case _message__WEBPACK_IMPORTED_MODULE_0__["PhaseType"].guess:
                 this.isGuess = true;
                 break;
-            case Phase.result:
+            case _message__WEBPACK_IMPORTED_MODULE_0__["PhaseType"].result:
                 this.isResult = true;
                 break;
             default:
                 break;
         }
-        if (this.phase == Phase.guess) {
+        if (this.phase == _message__WEBPACK_IMPORTED_MODULE_0__["PhaseType"].guess) {
             if (this.myTurn) {
                 this.word = cmd.data;
             }
@@ -602,7 +606,7 @@ class game_cmd_Handler {
                 console.log(this.wordSecret);
             }
         }
-        else if (this.phase == Phase.result) {
+        else if (this.phase == _message__WEBPACK_IMPORTED_MODULE_0__["PhaseType"].result) {
         }
         // ChatContainer.getInstance().push(Chat.SysMsg(cmd.state + '시작'));
     }
@@ -614,8 +618,8 @@ class game_cmd_Handler {
         CanvasController.getInstance().clear();
         ChatContainer.getInstance().push(Chat.SysMsg(cmd.data + '의 차례입니다.'));
     }
-    changeRound(round) {
-        ChatContainer.getInstance().push(Chat.SysMsg('Round #' + round));
+    changeRound(cmd) {
+        ChatContainer.getInstance().push(Chat.SysMsg('Round #' + cmd.data));
     }
     sortScore(score) {
         // 나중에 변경
@@ -624,7 +628,8 @@ class game_cmd_Handler {
         //2. 점수별 정렬
         //TODO Participants를 Map으로 쓰는게 좋겠다.
     }
-    startGame(participants) {
+    startGame(cmd_msg) {
+        let participants = cmd_msg.data;
         this.isInGame = true;
         UserContainer.getInstance().setParticipants(participants);
         ChatContainer.getInstance().push(Chat.SysMsg('<<게임 시작>>'));
@@ -649,34 +654,42 @@ class game_cmd_Handler {
         UserContainer.getInstance().resetCorrect();
     }
     cmd_Handler(cmd) {
-        console.log(cmd);
-        if (cmd.type == 'transition') {
+        console.log("cmd received", cmd);
+        if (cmd.type == _message__WEBPACK_IMPORTED_MODULE_0__["Cmd_Type"].TRANSITION) {
             // Phase가 바뀜
+            // let cmd_msg:Cmd_Transition = Cmd_Transition.getInstance().inflate(cmd)
             this.changePhase(cmd);
         }
-        else if (cmd.type == 'turn') {
+        else if (cmd.type == _message__WEBPACK_IMPORTED_MODULE_0__["Cmd_Type"].TURN) {
             // ~의 차례로 차례가 바뀜
+            // let cmd_msg:Cmd_Turn = Cmd_Turn.getInstance().inflate(cmd)
             this.changeTurn(cmd);
         }
-        else if (cmd.type == 'turnleft') {
+        else if (cmd.type == _message__WEBPACK_IMPORTED_MODULE_0__["Cmd_Type"].TURN_LEFT) {
             // 턴 유저가 나감
             ChatContainer.getInstance().push(Chat.SysMsg('턴 유저였던 ' + cmd.data + '가 퇴장해서 다음턴으로 넘어갑니다.'));
+            // let cmd_msg:Cmd_Turn = Cmd_Turn.getInstance().inflate(cmd)
             this.changeTurn(cmd);
         }
-        else if (cmd.type == 'round') {
+        else if (cmd.type == _message__WEBPACK_IMPORTED_MODULE_0__["Cmd_Type"].ROUND) {
             // 라운드가 바뀜
-            this.changeRound(cmd.data);
+            // let cmd_msg:Cmd_Round = Cmd_Round.getInstance().inflate(cmd)
+            this.changeRound(cmd);
         }
-        else if (cmd.type == 'gameover') {
+        else if (cmd.type == _message__WEBPACK_IMPORTED_MODULE_0__["Cmd_Type"].GAME_OVER) {
             // 게임이 끝
+            //TODO 최종 결과 받은거 처리하게 만들기
+            // let cmd_msg:Cmd_GameOver = Cmd_GameOver.getInstance().inflate(cmd)
             this.clearGame();
         }
-        else if (cmd.type == 'gamestart') {
-            this.startGame(cmd.data);
+        else if (cmd.type == _message__WEBPACK_IMPORTED_MODULE_0__["Cmd_Type"].GAME_START) {
+            // let cmd_msg:Cmd_GameStart = Cmd_GameStart.getInstance().inflate(cmd)
+            this.startGame(cmd);
         }
     }
     msg_Handler(msg) {
         if (msg.type == 'words') {
+            console.log("msg received", msg);
             if (this.myTurn) {
                 // 세 가지 단어중에서 선택
                 msg.data.forEach(function (w) {
@@ -686,15 +699,16 @@ class game_cmd_Handler {
             }
         }
         else if (msg.type == 'system') {
-            if (this.phase == Phase.prepare) {
+            console.log("msg received", msg);
+            if (this.phase == _message__WEBPACK_IMPORTED_MODULE_0__["PhaseType"].prepare) {
             }
-            else if (this.phase == Phase.guess) {
+            else if (this.phase == _message__WEBPACK_IMPORTED_MODULE_0__["PhaseType"].guess) {
                 // ~가 맞췄습니다
                 //
                 UserContainer.getInstance().setCorrect(msg.data.user, msg.data.score);
                 ChatContainer.getInstance().push(Chat.SysMsg(msg.data.user + '가 맞췄습니다.'));
             }
-            else if (this.phase == Phase.result) {
+            else if (this.phase == _message__WEBPACK_IMPORTED_MODULE_0__["PhaseType"].result) {
                 // 턴 스코어
                 // msg.data = {name:string, score:number}
                 console.log(msg.data);
@@ -916,14 +930,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RoomComponent", function() { return RoomComponent; });
 /* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @angular/core */ "fXoL");
 /* harmony import */ var _draw__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../draw */ "DNdT");
-/* harmony import */ var socket_io_client__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! socket.io-client */ "jifJ");
-/* harmony import */ var socket_io_client__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(socket_io_client__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _angular_router__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @angular/router */ "tyNb");
-/* harmony import */ var _angular_common__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @angular/common */ "ofXK");
-/* harmony import */ var _sidebar_sidebar_component__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../sidebar/sidebar.component */ "47Jg");
-/* harmony import */ var _canvas_canvas_component__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../canvas/canvas.component */ "bTD/");
-/* harmony import */ var _angular_forms__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @angular/forms */ "3Pt+");
-/* harmony import */ var _chat_chat_component__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../chat/chat.component */ "+XlM");
+/* harmony import */ var _message__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../message */ "oqF8");
+/* harmony import */ var socket_io_client__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! socket.io-client */ "jifJ");
+/* harmony import */ var socket_io_client__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(socket_io_client__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _angular_router__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @angular/router */ "tyNb");
+/* harmony import */ var _angular_common__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @angular/common */ "ofXK");
+/* harmony import */ var _sidebar_sidebar_component__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../sidebar/sidebar.component */ "47Jg");
+/* harmony import */ var _canvas_canvas_component__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../canvas/canvas.component */ "bTD/");
+/* harmony import */ var _angular_forms__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @angular/forms */ "3Pt+");
+/* harmony import */ var _chat_chat_component__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../chat/chat.component */ "+XlM");
+
 
 
 
@@ -1015,7 +1031,7 @@ class RoomComponent {
         this.route = route;
         this.mousedown = false;
         this.isHost = false;
-        this.ROOM_ID = 7777;
+        this.ROOM_ID = "7777";
         this.ROOM_ID = route.snapshot.params['roomID'];
         this.mySelf = new _draw__WEBPACK_IMPORTED_MODULE_1__["User"]('user' + Math.floor(Math.random() * 1000));
         this.myName = this.mySelf.getName();
@@ -1058,34 +1074,44 @@ class RoomComponent {
     handleMouseEnter(e) {
         if (this.mousedown &&
             this.gameHandler.myTurn &&
-            this.gameHandler.phase == _draw__WEBPACK_IMPORTED_MODULE_1__["Phase"].guess) {
-            console.log('X: ' + e.pageX + ', Y: ' + e.pageY); //-> "mouseenter"
-            _draw__WEBPACK_IMPORTED_MODULE_1__["CanvasController"].getInstance().draw(e.offsetX, e.offsetY);
-            var data = { X: e.offsetX, Y: e.offsetY };
-            this.socket.emit('draw cmd', data);
+            this.gameHandler.phase == _message__WEBPACK_IMPORTED_MODULE_2__["PhaseType"].guess) {
+            //e : TouchEvent
+            //e.touches : TouchList
+            //e.touches[0] : Touch
+            //e.touches[0].pageX 
+            var drawData = { X: 0, Y: 0 };
+            if (e instanceof MouseEvent) {
+                drawData = { X: e.offsetX, Y: e.offsetY };
+            }
+            else if (e instanceof TouchEvent) {
+                console.log(e);
+                drawData = { X: e.touches[0].pageX, Y: e.touches[0].pageY };
+            }
+            // console.log(e)
+            // console.log('X: ' + e.pageX + ', Y: ' + e.pageY); //-> "mouseenter"
+            _draw__WEBPACK_IMPORTED_MODULE_1__["CanvasController"].getInstance().draw(drawData.X, drawData.Y);
+            this.socket.emit('draw cmd', drawData);
             // this.dataService.sendMessage(data);
         }
     }
-    ngOnInit() {
-        // this.socket = io('ws://localhost:9999');
-        this.socket = Object(socket_io_client__WEBPACK_IMPORTED_MODULE_2__["io"])('ws://catchm1nd.herokuapp.com/');
-        console.log(this.socket);
+    initInstances(reason) {
+        if (reason) {
+            console.log("disconnected");
+            console.log(reason);
+        }
         var canvas = document.getElementById('canvas');
         _draw__WEBPACK_IMPORTED_MODULE_1__["CanvasController"].createInstance(canvas);
         _draw__WEBPACK_IMPORTED_MODULE_1__["game_cmd_Handler"].createInstance(this.mySelf);
-        this.gameHandler = _draw__WEBPACK_IMPORTED_MODULE_1__["game_cmd_Handler"].getInstance();
         this.chatList = _draw__WEBPACK_IMPORTED_MODULE_1__["ChatContainer"].getInstance();
+        this.gameHandler = _draw__WEBPACK_IMPORTED_MODULE_1__["game_cmd_Handler"].getInstance();
         this.users = _draw__WEBPACK_IMPORTED_MODULE_1__["UserContainer"].getInstance();
+    }
+    ngOnInit() {
+        // this.socket = io('ws://localhost:9999');
+        this.socket = Object(socket_io_client__WEBPACK_IMPORTED_MODULE_3__["io"])('ws://catchm1nd.herokuapp.com/');
+        console.log(this.socket);
+        this.initInstances(null);
         this.socket.on('connect', () => {
-            this.socket.on('disconnect', (reason) => {
-                console.log('disconnected', reason);
-                //reset
-                if (reason === 'io server disconnect') {
-                    // the disconnection was initiated by the server, you need to reconnect manually
-                    this.socket.connect();
-                }
-                // else the socket will automatically try to reconnect
-            });
             let joinData = {
                 roomID: this.ROOM_ID,
                 user: this.mySelf,
@@ -1096,6 +1122,7 @@ class RoomComponent {
                 console.log(data);
                 _draw__WEBPACK_IMPORTED_MODULE_1__["CanvasController"].getInstance().draw(data.X, data.Y);
             });
+            this.socket.on('disconnect', this.initInstances);
             this.socket.on('sys-msg', (msg) => {
                 // 1. 호스트 변경
                 if (msg.type == 'host-changed') {
@@ -1146,6 +1173,7 @@ class RoomComponent {
                 _draw__WEBPACK_IMPORTED_MODULE_1__["game_cmd_Handler"].getInstance().cmd_Handler(cmd);
             }.bind(this));
         });
+        var canvas = document.getElementById('canvas');
         console.log(canvas);
         canvas.addEventListener('mousemove', function (e) {
             this.handleMouseEnter(e);
@@ -1158,6 +1186,8 @@ class RoomComponent {
         }.bind(this), false);
         canvas.addEventListener('touchstart', function (e) {
             e.preventDefault();
+            console.log("touchstart");
+            console.log(e);
             this.mousedown = true;
         }.bind(this), false);
         canvas.addEventListener('touchmove', function (e) {
@@ -1170,7 +1200,7 @@ class RoomComponent {
         }.bind(this), false);
     }
 }
-RoomComponent.ɵfac = function RoomComponent_Factory(t) { return new (t || RoomComponent)(_angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdirectiveInject"](_angular_router__WEBPACK_IMPORTED_MODULE_3__["ActivatedRoute"])); };
+RoomComponent.ɵfac = function RoomComponent_Factory(t) { return new (t || RoomComponent)(_angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdirectiveInject"](_angular_router__WEBPACK_IMPORTED_MODULE_4__["ActivatedRoute"])); };
 RoomComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineComponent"]({ type: RoomComponent, selectors: [["ng-component"]], decls: 32, vars: 12, consts: [[1, "row"], [1, "col-md-10"], [1, "col-md-2"], [4, "ngIf"], ["id", "host-section", "style", "\n    border: 1px solid lightgray;\n    margin-bottom: 7px;\n    background-color: whitesmoke;\n  ", 4, "ngIf"], [1, "col-12", "col-md-2", 2, "padding", "0px", "padding-left", "10px"], [2, "padding", "0px", "background-color", "whitesmoke", 3, "users", "hostUser"], [1, "col-12", "col-md-7", 2, "margin", "0px", "padding-left", "5px", "padding-right", "5px"], [2, "border", "1px solid lightgray"], ["id", "word-section"], ["id", "word-select", 4, "ngIf"], [1, "input-group", "mb-3"], ["type", "text", "placeholder", "Endter Guess!", "aria-describedby", "basic-addon2", 1, "form-control", 3, "ngModel", "ngModelChange"], [1, "input-group-append"], ["type", "button", 1, "btn", "btn-outline-primary", 3, "click"], [1, "col-12", "col-md-3", 2, "margin", "0px", "padding-left", "5px", "padding-right", "10px"], [2, "border", "1px solid lightgray", "background-color", "whitesmoke"], [3, "chatContainer"], ["type", "text", "placeholder", "\uBA54\uC2DC\uC9C0\uB97C \uC785\uB825\uD558\uC138\uC694.", "aria-describedby", "basic-addon2", 1, "form-control", 3, "ngModel", "ngModelChange"], ["id", "host-section", 2, "border", "1px solid lightgray", "margin-bottom", "7px", "background-color", "whitesmoke"], ["type", "button", "class", "btn btn-primary", 3, "click", 4, "ngIf"], ["type", "button", 1, "btn", "btn-primary", 3, "click"], ["id", "word-select"]], template: function RoomComponent_Template(rf, ctx) { if (rf & 1) {
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](0, "div", 0);
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](1, "div", 1);
@@ -1249,7 +1279,7 @@ RoomComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineComp
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("chatContainer", ctx.chatList);
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"](2);
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("ngModel", ctx.MsgToSend);
-    } }, directives: [_angular_common__WEBPACK_IMPORTED_MODULE_4__["NgIf"], _sidebar_sidebar_component__WEBPACK_IMPORTED_MODULE_5__["SidebarComponent"], _canvas_canvas_component__WEBPACK_IMPORTED_MODULE_6__["CanvasComponent"], _angular_forms__WEBPACK_IMPORTED_MODULE_7__["DefaultValueAccessor"], _angular_forms__WEBPACK_IMPORTED_MODULE_7__["NgControlStatus"], _angular_forms__WEBPACK_IMPORTED_MODULE_7__["NgModel"], _chat_chat_component__WEBPACK_IMPORTED_MODULE_8__["ChatComponent"]], styles: ["\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJzcmMvYXBwL3Jvb20vcm9vbS5jb21wb25lbnQuY3NzIn0= */"] });
+    } }, directives: [_angular_common__WEBPACK_IMPORTED_MODULE_5__["NgIf"], _sidebar_sidebar_component__WEBPACK_IMPORTED_MODULE_6__["SidebarComponent"], _canvas_canvas_component__WEBPACK_IMPORTED_MODULE_7__["CanvasComponent"], _angular_forms__WEBPACK_IMPORTED_MODULE_8__["DefaultValueAccessor"], _angular_forms__WEBPACK_IMPORTED_MODULE_8__["NgControlStatus"], _angular_forms__WEBPACK_IMPORTED_MODULE_8__["NgModel"], _chat_chat_component__WEBPACK_IMPORTED_MODULE_9__["ChatComponent"]], styles: ["\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJzcmMvYXBwL3Jvb20vcm9vbS5jb21wb25lbnQuY3NzIn0= */"] });
 /*@__PURE__*/ (function () { _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵsetClassMetadata"](RoomComponent, [{
         type: _angular_core__WEBPACK_IMPORTED_MODULE_0__["Component"],
         args: [{
@@ -1257,7 +1287,136 @@ RoomComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineComp
                 templateUrl: './room.component.html',
                 styleUrls: ['./room.component.css'],
             }]
-    }], function () { return [{ type: _angular_router__WEBPACK_IMPORTED_MODULE_3__["ActivatedRoute"] }]; }, null); })();
+    }], function () { return [{ type: _angular_router__WEBPACK_IMPORTED_MODULE_4__["ActivatedRoute"] }]; }, null); })();
+
+
+/***/ }),
+
+/***/ "oqF8":
+/*!****************************!*\
+  !*** ./src/app/message.ts ***!
+  \****************************/
+/*! exports provided: PhaseType, Cmd_Type, Cmd_Message, Cmd_Transition, Cmd_Turn, Cmd_TurnLeft, Cmd_Round, Cmd_GameOver, Cmd_GameStart */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PhaseType", function() { return PhaseType; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Cmd_Type", function() { return Cmd_Type; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Cmd_Message", function() { return Cmd_Message; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Cmd_Transition", function() { return Cmd_Transition; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Cmd_Turn", function() { return Cmd_Turn; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Cmd_TurnLeft", function() { return Cmd_TurnLeft; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Cmd_Round", function() { return Cmd_Round; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Cmd_GameOver", function() { return Cmd_GameOver; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Cmd_GameStart", function() { return Cmd_GameStart; });
+var Sys_Type;
+(function (Sys_Type) {
+    Sys_Type[Sys_Type["HOST_CHANGED"] = 0] = "HOST_CHANGED";
+    Sys_Type[Sys_Type["USER_WELCOME"] = 1] = "USER_WELCOME";
+    Sys_Type[Sys_Type["USER_JOIN"] = 2] = "USER_JOIN";
+    Sys_Type[Sys_Type["USER_LEAVE"] = 3] = "USER_LEAVE";
+})(Sys_Type || (Sys_Type = {}));
+var Msg_Type;
+(function (Msg_Type) {
+    Msg_Type[Msg_Type["WORDS"] = 0] = "WORDS";
+    Msg_Type[Msg_Type["SYSTEM"] = 1] = "SYSTEM";
+    Msg_Type[Msg_Type["TIMER"] = 2] = "TIMER";
+})(Msg_Type || (Msg_Type = {}));
+// export interface Cmd_Message{
+//     type: Cmd_Type;
+//     data: any; 
+// }
+var PhaseType;
+(function (PhaseType) {
+    PhaseType["ready"] = "ready";
+    PhaseType["prepare"] = "prepare";
+    PhaseType["guess"] = "guess";
+    PhaseType["result"] = "result";
+})(PhaseType || (PhaseType = {}));
+var Cmd_Type;
+(function (Cmd_Type) {
+    Cmd_Type[Cmd_Type["TRANSITION"] = 0] = "TRANSITION";
+    Cmd_Type[Cmd_Type["TURN"] = 1] = "TURN";
+    Cmd_Type[Cmd_Type["TURN_LEFT"] = 2] = "TURN_LEFT";
+    Cmd_Type[Cmd_Type["ROUND"] = 3] = "ROUND";
+    Cmd_Type[Cmd_Type["GAME_OVER"] = 4] = "GAME_OVER";
+    Cmd_Type[Cmd_Type["GAME_START"] = 5] = "GAME_START";
+})(Cmd_Type || (Cmd_Type = {}));
+class Cmd_Message {
+    inflate(CmdLike) {
+        this.type = CmdLike.type;
+        this.data = CmdLike.data;
+        return this;
+    }
+}
+class Cmd_Transition extends Cmd_Message {
+    constructor(state, data) {
+        super();
+        this.type = Cmd_Type.TRANSITION;
+        this.state = state;
+        this.data = data;
+    }
+    static getInstance() {
+        return new Cmd_Transition(null, null);
+    }
+    inflate(CmdLike) {
+        super.inflate(CmdLike);
+        this.data = CmdLike.data;
+        this.state = CmdLike.state;
+        return this;
+    }
+}
+class Cmd_Turn extends Cmd_Message {
+    constructor(data) {
+        super();
+        this.type = Cmd_Type.TURN;
+        this.data = data;
+    }
+    static getInstance() {
+        return new Cmd_Turn(null);
+    }
+}
+class Cmd_TurnLeft extends Cmd_Message {
+    constructor(data) {
+        super();
+        this.type = Cmd_Type.TURN_LEFT;
+        this.data = data;
+    }
+    static getInstance() {
+        return new Cmd_TurnLeft(null);
+    }
+}
+class Cmd_Round extends Cmd_Message {
+    constructor(data) {
+        super();
+        this.type = Cmd_Type.ROUND;
+        this.data = data;
+    }
+    static getInstance() {
+        return new Cmd_Round(null);
+    }
+}
+class Cmd_GameOver extends Cmd_Message {
+    constructor(data) {
+        super();
+        this.type = Cmd_Type.GAME_OVER;
+        this.data = data;
+    }
+    static getInstance() {
+        return new Cmd_GameOver(null);
+    }
+}
+class Cmd_GameStart extends Cmd_Message {
+    constructor(data) {
+        super();
+        this.type = Cmd_Type.GAME_OVER;
+        this.data = data;
+    }
+    static getInstance() {
+        return new Cmd_GameStart(null);
+    }
+}
 
 
 /***/ }),

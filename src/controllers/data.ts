@@ -1,7 +1,7 @@
 import socket_io, { Server } from "socket.io";
 
 export class User {
-  constructor(name: String, socket: socket_io.Socket, roomID: string) {
+  constructor(name: string, socket: socket_io.Socket, roomID: string) {
     this.name = name;
     // this.socket = socket;
     this.roomID = roomID;
@@ -9,7 +9,7 @@ export class User {
   isParticipant: boolean = false;
   score: Score = null;
   private roomID: string;
-  private name: String;
+  private name: string;
   // private socket: socket_io.Socket;
   public setRoomID(roomID: string): void {
     this.roomID = roomID;
@@ -20,7 +20,7 @@ export class User {
   // public getSocket(): socket_io.Socket {
   //   return this.socket;
   // }
-  public getName(): String {
+  public getName(): string {
     return this.name;
   }
 }

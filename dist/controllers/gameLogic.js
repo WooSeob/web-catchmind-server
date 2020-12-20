@@ -7,6 +7,7 @@ const Prepare_1 = require("./stage/Prepare");
 const util_1 = require("./util");
 const Guessing_1 = require("./stage/Guessing");
 const Resulting_1 = require("./stage/Resulting");
+const Message_1 = require("./Message");
 class Turn {
     constructor(turn, roomID, remainTIme) {
         this.turn = turn;
@@ -84,39 +85,22 @@ class Game {
     }
     start() {
         if (!this.isInGame && this.isGameReady) {
-            let io = main_1.SocketHandler.getInstance().getIo();
-            let startMsg = {
-                type: "gamestart",
-                data: this.participants.getAllList().map((u) => u.getName()),
-            };
-            io.sockets.in(this.roomID).emit("game-cmd", startMsg);
+            //게임 스타트 메시지
+            main_1.SocketHandler.getInstance().sendGameCMD(this.roomID, new Message_1.Cmd_GameStart(this.participants.getAllList().map((u) => u.getName())));
             this.isGameReady = false;
             this.isInGame = true;
             let first = this.participants.getHead();
             //첫 라운드 시작 브로드캐스팅
-            let roundMsg = {
-                type: "round",
-                data: this.currentRound,
-            };
-            io.sockets.in(this.roomID).emit("game-cmd", roundMsg);
+            main_1.SocketHandler.getInstance().sendGameCMD(this.roomID, new Message_1.Cmd_Round(this.currentRound));
             this.turn = new Turn(first, this.roomID, this.timePerTurn);
             this.transitionTrun();
         }
     }
     transitionTrun() {
         // 턴 변경 브로드캐스팅
-        let io = main_1.SocketHandler.getInstance().getIo();
-        let turnMsg = {
-            type: "turn",
-            data: this.turn.whosTurn().getName(),
-        };
-        io.sockets.in(this.roomID).emit("game-cmd", turnMsg);
+        main_1.SocketHandler.getInstance().sendGameCMD(this.roomID, new Message_1.Cmd_Turn(this.turn.whosTurn().getName()));
         //prepare 시작 브로드캐스팅
-        let transitionMsg = {
-            type: "transition",
-            state: "prepare",
-        };
-        io.sockets.in(this.roomID).emit("game-cmd", transitionMsg);
+        main_1.SocketHandler.getInstance().sendGameCMD(this.roomID, new Message_1.Cmd_Transition(Message_1.PhaseType.prepare, null));
         this.turn.startPhase().then((result) => {
             //한턴 끝나면
             console.log("턴 종료.");
@@ -143,22 +127,12 @@ class Game {
             this.currentRound++;
             if (this.currentRound > this.EndRound) {
                 //게임 오버 메시지 브로드캐스팅
-                let io = main_1.SocketHandler.getInstance().getIo();
-                let gameOverMsg = {
-                    type: "gameover",
-                    data: 1,
-                };
-                io.sockets.in(this.roomID).emit("game-cmd", gameOverMsg);
+                main_1.SocketHandler.getInstance().sendGameCMD(this.roomID, new Message_1.Cmd_GameOver(1));
                 return null; // 모든 라운드 끝
             }
             else {
                 // 다음 라운드로
-                let io = main_1.SocketHandler.getInstance().getIo();
-                let roundMsg = {
-                    type: "round",
-                    data: this.currentRound,
-                };
-                io.sockets.in(this.roomID).emit("game-cmd", roundMsg);
+                main_1.SocketHandler.getInstance().sendGameCMD(this.roomID, new Message_1.Cmd_Round(this.currentRound));
                 console.log("round#" + this.currentRound);
                 return next;
             }
@@ -177,12 +151,8 @@ class Game {
             let isTurnPlayerLeft = this.participants.removePlayer(user);
             if (isTurnPlayerLeft) {
                 console.log("턴유저가 나감");
-                let io = main_1.SocketHandler.getInstance().getIo();
-                let turnUserLeftMsg = {
-                    type: "turnleft",
-                    data: user.getName(),
-                };
-                io.sockets.in(this.roomID).emit("game-cmd", turnUserLeftMsg);
+                // 턴유저 나간거 브로드캐스트
+                main_1.SocketHandler.getInstance().sendGameCMD(this.roomID, new Message_1.Cmd_TurnLeft(user.getName()));
                 this.turn.stopPhase();
             }
         }

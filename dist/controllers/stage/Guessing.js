@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Guessing = void 0;
 const Phase_1 = require("./Phase");
 const Resulting_1 = require("./Resulting");
+const Message_1 = require("../Message");
 class Guessing extends Phase_1.State {
     constructor(roomID, word) {
         super();
@@ -18,12 +19,7 @@ class Guessing extends Phase_1.State {
         setTimeout(() => {
             console.log("guessing 종료.");
             console.log("- guess result -");
-            let msg = {
-                type: "transition",
-                state: "result",
-                data: this.score,
-            };
-            this.io.sockets.in(this.roomID).emit("game-cmd", msg);
+            this.sHandler.sendGameCMD(this.roomID, new Message_1.Cmd_Transition(Message_1.PhaseType.result, this.score));
             console.log(this.score);
             this.suspendAllTask(new Resulting_1.Resulting(this.roomID, this.score));
         }, this.Timeout * 1000);
@@ -49,12 +45,9 @@ class Guessing extends Phase_1.State {
     }
     stopPhase() {
         super.stopPhase();
-        let msg = {
-            type: "transition",
-            state: "result",
-            data: this.score,
-        };
-        this.io.sockets.in(this.roomID).emit("game-cmd", msg);
+        // 결과 점수 브로드캐스팅
+        this.sHandler.sendGameCMD(this.roomID, new Message_1.Cmd_Transition(Message_1.PhaseType.result, this.score));
+        // 작업 종료
         this.suspendAllTask(new Resulting_1.Resulting(this.roomID, this.score));
     }
 }

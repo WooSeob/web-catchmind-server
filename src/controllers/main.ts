@@ -4,7 +4,7 @@
 import { Game } from "./gameLogic";
 import { User, JoinData, DrawData, Score } from "./data";
 import socket_io, { Server } from "socket.io";
-
+import { Cmd_GameStart, Cmd_Message, Msg_Message, Sys_Message } from "./Message"
 // var userListByRoom = new Map();
 var RoomPool: Map<string, Room> = new Map();
 
@@ -179,6 +179,19 @@ export class SocketHandler {
       return null;
     }
   }
+
+  sendGameCMD(roomID:string, cmd_message:Cmd_Message){
+    this.io.sockets.in(roomID).emit("game-cmd", cmd_message);
+  }
+
+  sendGameMsg(roomID:string, msg_message: Msg_Message){
+    this.io.sockets.in(roomID).emit("game-msg", msg_message);
+  }
+  
+  sendSysMsg(roomID:string, sys_Message: Sys_Message){
+    this.io.sockets.in(roomID).emit("sys-msg", sys_Message);
+  }
+
   private handler(socket: socket_io.Socket): void {
     let room: Room;
     let thisUser: User;

@@ -1,6 +1,7 @@
 import { State } from "./Phase";
 import { User } from "../data";
 import { Resulting } from "./Resulting";
+import { Cmd_Transition, Cmd_TurnLeft, PhaseType } from "../Message"
 
 export class Guessing extends State {
   constructor(roomID: string, word: String) {
@@ -9,7 +10,7 @@ export class Guessing extends State {
     this.word = word;
     this.Timeout = 7;
   }
-  private score: Map<String, number> = new Map();
+  private score: Map<string, number> = new Map();
   private word: String;
 
   Transition(resolve): void {
@@ -20,12 +21,9 @@ export class Guessing extends State {
       console.log("guessing 종료.");
       console.log("- guess result -");
 
-      let msg = {
-        type: "transition",
-        state: "result",
-        data: this.score,
-      };
-      this.io.sockets.in(this.roomID).emit("game-cmd", msg);
+      this.sHandler.sendGameCMD(
+        this.roomID, 
+        new Cmd_Transition(PhaseType.result, this.score))
 
       console.log(this.score);
       this.suspendAllTask(new Resulting(this.roomID, this.score));
@@ -50,17 +48,18 @@ export class Guessing extends State {
         },
       };
       this.io.sockets.in(this.roomID).emit("game-msg", msg);
+
     }
   }
   stopPhase(): void {
     super.stopPhase();
 
-    let msg = {
-      type: "transition",
-      state: "result",
-      data: this.score,
-    };
-    this.io.sockets.in(this.roomID).emit("game-cmd", msg);
+    // 결과 점수 브로드캐스팅
+    this.sHandler.sendGameCMD(
+      this.roomID, 
+      new Cmd_Transition(PhaseType.result, this.score))
+    
+    // 작업 종료
     this.suspendAllTask(new Resulting(this.roomID, this.score));
   }
 }

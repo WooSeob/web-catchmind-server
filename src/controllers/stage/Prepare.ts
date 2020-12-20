@@ -3,6 +3,7 @@ import { User } from "../data";
 import { Guessing } from "./Guessing";
 import { WORD_POOL } from "../data";
 import { Resulting } from "./Resulting";
+import { Cmd_Transition, PhaseType } from "../Message"
 
 export class Prepare extends State {
   constructor(roomID: string) {
@@ -34,12 +35,11 @@ export class Prepare extends State {
       let randIdx = Math.floor(Math.random() * 3);
       this.selectedWord = this.words[randIdx];
 
-      let msg = {
-        type: "transition",
-        state: "guess",
-        data: this.selectedWord,
-      };
-      this.io.sockets.in(this.roomID).emit("game-cmd", msg);
+      //확정된 제시어 전송
+      this.sHandler.sendGameCMD(
+        this.roomID, 
+        new Cmd_Transition(PhaseType.guess, this.selectedWord))
+
       this.suspendAllTask(new Guessing(this.roomID, this.selectedWord));
     }, this.Timeout * 1000);
   }
@@ -50,27 +50,26 @@ export class Prepare extends State {
     console.log(msg);
     this.selectedWord = this.words[msg];
     console.log("selected is " + this.selectedWord);
+    
+    //확정된 제시어 에코 전송
+    this.sHandler.sendGameCMD(
+      this.roomID, 
+      new Cmd_Transition(PhaseType.guess, this.selectedWord))
 
-    let echoMsg = {
-      type: "transition",
-      state: "guess",
-      data: this.selectedWord,
-    };
-    this.io.sockets.in(this.roomID).emit("game-cmd", echoMsg);
     this.suspendAllTask(new Guessing(this.roomID, this.selectedWord));
   }
 
   public stopPhase(): void {
-    // 3
+    // 3. 해당 턴 플레이어가 Prepare 단계에서 퇴장했을때.
     super.stopPhase();
 
-    let nullScore: Map<String, number> = new Map();
-    let msg = {
-      type: "transition",
-      state: "result",
-      data: nullScore,
-    };
-    this.io.sockets.in(this.roomID).emit("game-cmd", msg);
+    let nullScore: Map<string, number> = new Map();
+
+    // 턴종료. null score 전송
+    this.sHandler.sendGameCMD(
+      this.roomID, 
+      new Cmd_Transition(PhaseType.result, nullScore))
+
     this.suspendAllTask(new Resulting(this.roomID, nullScore));
   }
 

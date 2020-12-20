@@ -6,6 +6,7 @@ import { Phase } from "./stage/Phase";
 import { PlayerQueue } from "./util";
 import { Guessing } from "./stage/Guessing";
 import { Resulting } from "./stage/Resulting";
+import { Cmd_Transition, Cmd_GameOver, Cmd_GameStart, Cmd_Round, Cmd_Turn, PhaseType, Cmd_TurnLeft, } from "./Message"
 
 class Turn {
   constructor(turn: User, roomID: string, remainTIme: number) {
@@ -98,23 +99,16 @@ export class Game {
   }
   public start(): void {
     if (!this.isInGame && this.isGameReady) {
-      let io: socket_io.Server = SocketHandler.getInstance().getIo();
-      let startMsg = {
-        type: "gamestart",
-        data: this.participants.getAllList().map((u) => u.getName()),
-      };
-      io.sockets.in(this.roomID).emit("game-cmd", startMsg);
 
+      //게임 스타트 메시지
+      SocketHandler.getInstance().sendGameCMD(this.roomID, new Cmd_GameStart(this.participants.getAllList().map((u) => u.getName())))
+    
       this.isGameReady = false;
       this.isInGame = true;
       let first: User = this.participants.getHead();
 
       //첫 라운드 시작 브로드캐스팅
-      let roundMsg = {
-        type: "round",
-        data: this.currentRound,
-      };
-      io.sockets.in(this.roomID).emit("game-cmd", roundMsg);
+      SocketHandler.getInstance().sendGameCMD(this.roomID, new Cmd_Round(this.currentRound))
 
       this.turn = new Turn(first, this.roomID, this.timePerTurn);
       this.transitionTrun();
@@ -123,19 +117,14 @@ export class Game {
 
   private transitionTrun(): void {
     // 턴 변경 브로드캐스팅
-    let io: socket_io.Server = SocketHandler.getInstance().getIo();
-    let turnMsg = {
-      type: "turn",
-      data: this.turn.whosTurn().getName(),
-    };
-    io.sockets.in(this.roomID).emit("game-cmd", turnMsg);
+    SocketHandler.getInstance().sendGameCMD(
+      this.roomID, 
+      new Cmd_Turn(this.turn.whosTurn().getName()))
 
     //prepare 시작 브로드캐스팅
-    let transitionMsg = {
-      type: "transition",
-      state: "prepare",
-    };
-    io.sockets.in(this.roomID).emit("game-cmd", transitionMsg);
+    SocketHandler.getInstance().sendGameCMD(
+      this.roomID, 
+      new Cmd_Transition(PhaseType.prepare, null))
 
     this.turn.startPhase().then((result: Map<String, number>) => {
       //한턴 끝나면
@@ -167,21 +156,16 @@ export class Game {
       this.currentRound++;
       if (this.currentRound > this.EndRound) {
         //게임 오버 메시지 브로드캐스팅
-        let io: socket_io.Server = SocketHandler.getInstance().getIo();
-        let gameOverMsg = {
-          type: "gameover",
-          data: 1,
-        };
-        io.sockets.in(this.roomID).emit("game-cmd", gameOverMsg);
+        SocketHandler.getInstance().sendGameCMD(
+          this.roomID, 
+          new Cmd_GameOver(1))
+
         return null; // 모든 라운드 끝
       } else {
         // 다음 라운드로
-        let io: socket_io.Server = SocketHandler.getInstance().getIo();
-        let roundMsg = {
-          type: "round",
-          data: this.currentRound,
-        };
-        io.sockets.in(this.roomID).emit("game-cmd", roundMsg);
+        SocketHandler.getInstance().sendGameCMD(
+          this.roomID, 
+          new Cmd_Round(this.currentRound))
         console.log("round#" + this.currentRound);
         return next;
       }
@@ -202,12 +186,10 @@ export class Game {
 
       if (isTurnPlayerLeft) {
         console.log("턴유저가 나감");
-        let io: socket_io.Server = SocketHandler.getInstance().getIo();
-        let turnUserLeftMsg = {
-          type: "turnleft",
-          data: user.getName(),
-        };
-        io.sockets.in(this.roomID).emit("game-cmd", turnUserLeftMsg);
+        // 턴유저 나간거 브로드캐스트
+        SocketHandler.getInstance().sendGameCMD(
+          this.roomID, 
+          new Cmd_TurnLeft(user.getName()))
         this.turn.stopPhase();
       }
     }

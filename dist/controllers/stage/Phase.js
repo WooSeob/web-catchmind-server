@@ -5,7 +5,8 @@ const main_1 = require("../main");
 class State {
     constructor() {
         this.Timeout = 3;
-        this.io = main_1.SocketHandler.getInstance().getIo();
+        this.sHandler = main_1.SocketHandler.getInstance();
+        this.io = this.sHandler.getIo();
     }
     Do() {
         this.timer();

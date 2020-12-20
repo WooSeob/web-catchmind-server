@@ -5,6 +5,7 @@ const Phase_1 = require("./Phase");
 const Guessing_1 = require("./Guessing");
 const data_1 = require("../data");
 const Resulting_1 = require("./Resulting");
+const Message_1 = require("../Message");
 class Prepare extends Phase_1.State {
     constructor(roomID) {
         super();
@@ -31,12 +32,8 @@ class Prepare extends Phase_1.State {
             console.log("prepare 종료.");
             let randIdx = Math.floor(Math.random() * 3);
             this.selectedWord = this.words[randIdx];
-            let msg = {
-                type: "transition",
-                state: "guess",
-                data: this.selectedWord,
-            };
-            this.io.sockets.in(this.roomID).emit("game-cmd", msg);
+            //확정된 제시어 전송
+            this.sHandler.sendGameCMD(this.roomID, new Message_1.Cmd_Transition(Message_1.PhaseType.guess, this.selectedWord));
             this.suspendAllTask(new Guessing_1.Guessing(this.roomID, this.selectedWord));
         }, this.Timeout * 1000);
     }
@@ -47,24 +44,16 @@ class Prepare extends Phase_1.State {
         console.log(msg);
         this.selectedWord = this.words[msg];
         console.log("selected is " + this.selectedWord);
-        let echoMsg = {
-            type: "transition",
-            state: "guess",
-            data: this.selectedWord,
-        };
-        this.io.sockets.in(this.roomID).emit("game-cmd", echoMsg);
+        //확정된 제시어 에코 전송
+        this.sHandler.sendGameCMD(this.roomID, new Message_1.Cmd_Transition(Message_1.PhaseType.guess, this.selectedWord));
         this.suspendAllTask(new Guessing_1.Guessing(this.roomID, this.selectedWord));
     }
     stopPhase() {
-        // 3
+        // 3. 해당 턴 플레이어가 Prepare 단계에서 퇴장했을때.
         super.stopPhase();
         let nullScore = new Map();
-        let msg = {
-            type: "transition",
-            state: "result",
-            data: nullScore,
-        };
-        this.io.sockets.in(this.roomID).emit("game-cmd", msg);
+        // 턴종료. null score 전송
+        this.sHandler.sendGameCMD(this.roomID, new Message_1.Cmd_Transition(Message_1.PhaseType.result, nullScore));
         this.suspendAllTask(new Resulting_1.Resulting(this.roomID, nullScore));
     }
 }

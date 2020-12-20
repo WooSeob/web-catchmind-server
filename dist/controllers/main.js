@@ -156,6 +156,15 @@ class SocketHandler {
             return null;
         }
     }
+    sendGameCMD(roomID, cmd_message) {
+        this.io.sockets.in(roomID).emit("game-cmd", cmd_message);
+    }
+    sendGameMsg(roomID, msg_message) {
+        this.io.sockets.in(roomID).emit("game-msg", msg_message);
+    }
+    sendSysMsg(roomID, sys_Message) {
+        this.io.sockets.in(roomID).emit("sys-msg", sys_Message);
+    }
     handler(socket) {
         let room;
         let thisUser;
