@@ -4,11 +4,11 @@ import { Resulting } from "./Resulting";
 import { Cmd_Transition, Cmd_TurnLeft, PhaseType } from "../Message"
 
 export class Guessing extends State {
-  constructor(roomID: string, word: String) {
+  constructor(roomID: string, word: String, timeout: number) {
     super();
     this.roomID = roomID;
     this.word = word;
-    this.Timeout = 7;
+    this.Timeout = timeout;
   }
   private score: Map<string, number> = new Map();
   private word: String;

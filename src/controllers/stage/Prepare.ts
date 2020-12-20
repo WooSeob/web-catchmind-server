@@ -6,10 +6,13 @@ import { Resulting } from "./Resulting";
 import { Cmd_Transition, PhaseType } from "../Message"
 
 export class Prepare extends State {
-  constructor(roomID: string) {
+  timeoutForGuess: number;
+  constructor(roomID: string, timeout: number) {
     super();
     this.roomID = roomID;
     this.Timeout = 5;
+
+    this.timeoutForGuess = timeout;
   }
   // 1. 플레이어가 선택을 했을 때.
   // 2. TimeOut 되었을때. -> 랜덤으로 그냥 하나 선택함.
@@ -40,7 +43,7 @@ export class Prepare extends State {
         this.roomID, 
         new Cmd_Transition(PhaseType.guess, this.selectedWord))
 
-      this.suspendAllTask(new Guessing(this.roomID, this.selectedWord));
+      this.suspendAllTask(new Guessing(this.roomID, this.selectedWord, this.timeoutForGuess));
     }, this.Timeout * 1000);
   }
   TurnDo(user: User, msg: any) {
@@ -56,7 +59,7 @@ export class Prepare extends State {
       this.roomID, 
       new Cmd_Transition(PhaseType.guess, this.selectedWord))
 
-    this.suspendAllTask(new Guessing(this.roomID, this.selectedWord));
+    this.suspendAllTask(new Guessing(this.roomID, this.selectedWord, this.timeoutForGuess));
   }
 
   public stopPhase(): void {
