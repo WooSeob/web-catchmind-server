@@ -342,6 +342,8 @@ class Score {
 }
 class CanvasController {
     constructor(canvas) {
+        this.prevX = -1;
+        this.prevY = -1;
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');
         this.init();
@@ -359,14 +361,32 @@ class CanvasController {
         }
     }
     draw(x, y) {
-        this.ctx.fillStyle = 'green';
         this.ctx.beginPath();
-        this.ctx.arc(x, y, 5, 0, 2 * Math.PI);
-        this.ctx.closePath();
-        this.ctx.fill();
+        this.ctx.lineWidth = "3";
+        this.ctx.strokeStyle = 'green';
+        if (this.prevX > -1 && this.prevY > -1) {
+            this.ctx.moveTo(this.prevX, this.prevY);
+        }
+        else {
+            this.ctx.moveTo(x, y);
+        }
+        this.ctx.lineTo(x, y);
+        this.ctx.stroke();
+        this.prevX = x;
+        this.prevY = y;
+        // this.ctx.beginPath();
+        // this.ctx.arc(x, y, 5, 0, 2 * Math.PI);
+        // this.ctx.closePath();
+        // this.ctx.fill();
+    }
+    penUp() {
+        this.prevY = -1;
+        this.prevX = -1;
     }
     clear() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.prevY = -1;
+        this.prevX = -1;
     }
     init() {
         if (window.devicePixelRatio) {
@@ -1031,7 +1051,7 @@ class RoomComponent {
         this.route = route;
         this.mousedown = false;
         this.isHost = false;
-        this.ROOM_ID = "7777";
+        this.ROOM_ID = '7777';
         this.ROOM_ID = route.snapshot.params['roomID'];
         this.mySelf = new _draw__WEBPACK_IMPORTED_MODULE_1__["User"]('user' + Math.floor(Math.random() * 1000));
         this.myName = this.mySelf.getName();
@@ -1068,12 +1088,12 @@ class RoomComponent {
         };
         this.socket.emit('game-cmd', gameSetting);
     }
-    toggleMouseDown(b) {
-        this.mousedown = b;
-    }
-    touchStart(x, y) {
-        this.touchStartX = x;
-        this.touchStartY = y;
+    penUp() {
+        if (this.mousedown &&
+            this.gameHandler.myTurn &&
+            this.gameHandler.phase == _message__WEBPACK_IMPORTED_MODULE_2__["PhaseType"].guess) {
+            this.socket.emit('draw cmd', { type: 'pen_up' });
+        }
     }
     handleMouseEnter(e) {
         if (this.mousedown &&
@@ -1082,7 +1102,7 @@ class RoomComponent {
             //e : TouchEvent
             //e.touches : TouchList
             //e.touches[0] : Touch
-            //e.touches[0].pageX 
+            //e.touches[0].pageX
             let isMoblie = false;
             var drawData = { X: 0, Y: 0 };
             if (e instanceof MouseEvent) {
@@ -1095,19 +1115,23 @@ class RoomComponent {
                 console.log(e);
                 drawData = {
                     X: e.touches[0].pageX - e.target.offsetLeft,
-                    Y: e.touches[0].pageY - e.target.offsetTop
+                    Y: e.touches[0].pageY - e.target.offsetTop,
                 };
             }
             // console.log(e)
             // console.log('X: ' + e.pageX + ', Y: ' + e.pageY); //-> "mouseenter"
             _draw__WEBPACK_IMPORTED_MODULE_1__["CanvasController"].getInstance().draw(drawData.X, drawData.Y);
-            this.socket.emit('draw cmd', drawData);
+            let msg = {
+                type: 'draw',
+                data: drawData,
+            };
+            this.socket.emit('draw cmd', msg);
             // this.dataService.sendMessage(data);
         }
     }
     initInstances(reason) {
         if (reason) {
-            console.log("disconnected");
+            console.log('disconnected');
             console.log(reason);
         }
         var canvas = document.getElementById('canvas');
@@ -1129,9 +1153,16 @@ class RoomComponent {
             };
             console.log(joinData);
             this.socket.emit('join', joinData);
-            this.socket.on('draw cmd', (data) => {
-                console.log(data);
-                _draw__WEBPACK_IMPORTED_MODULE_1__["CanvasController"].getInstance().draw(data.X, data.Y);
+            this.socket.on('draw cmd', (cmd) => {
+                if (!this.gameHandler.myTurn) {
+                    console.log(cmd);
+                    if (cmd.type == 'draw') {
+                        _draw__WEBPACK_IMPORTED_MODULE_1__["CanvasController"].getInstance().draw(cmd.data.X, cmd.data.Y);
+                    }
+                    else if (cmd.type == 'pen_up') {
+                        _draw__WEBPACK_IMPORTED_MODULE_1__["CanvasController"].getInstance().penUp();
+                    }
+                }
             });
             this.socket.on('disconnect', this.initInstances);
             this.socket.on('sys-msg', (msg) => {
@@ -1193,12 +1224,13 @@ class RoomComponent {
             this.mousedown = true;
         }.bind(this), false);
         canvas.addEventListener('mouseup', function (e) {
+            this.penUp();
             this.mousedown = false;
+            _draw__WEBPACK_IMPORTED_MODULE_1__["CanvasController"].getInstance().penUp();
         }.bind(this), false);
         canvas.addEventListener('touchstart', function (e) {
             e.preventDefault();
             console.log(e);
-            this.touchStart(e.touches[0].pageX, e.touches[0].pageY);
             this.mousedown = true;
         }.bind(this), false);
         canvas.addEventListener('touchmove', function (e) {
@@ -1207,7 +1239,10 @@ class RoomComponent {
         }.bind(this), false);
         canvas.addEventListener('touchend', function (e) {
             e.preventDefault();
+            this.penUp();
             this.mousedown = false;
+            if (this)
+                _draw__WEBPACK_IMPORTED_MODULE_1__["CanvasController"].getInstance().penUp();
         }.bind(this), false);
     }
 }
