@@ -1083,13 +1083,20 @@ class RoomComponent {
             //e.touches : TouchList
             //e.touches[0] : Touch
             //e.touches[0].pageX 
+            let isMoblie = false;
             var drawData = { X: 0, Y: 0 };
             if (e instanceof MouseEvent) {
                 drawData = { X: e.offsetX, Y: e.offsetY };
             }
             else if (e instanceof TouchEvent) {
+                isMoblie = true;
+            }
+            if (isMoblie) {
                 console.log(e);
-                drawData = { X: e.touches[0].pageX - this.touchStartX, Y: e.touches[0].pageY - this.touchStartY };
+                drawData = {
+                    X: e.touches[0].pageX - e.target.offsetLeft,
+                    Y: e.touches[0].pageY - e.target.offsetTop
+                };
             }
             // console.log(e)
             // console.log('X: ' + e.pageX + ', Y: ' + e.pageY); //-> "mouseenter"
@@ -1190,6 +1197,7 @@ class RoomComponent {
         }.bind(this), false);
         canvas.addEventListener('touchstart', function (e) {
             e.preventDefault();
+            console.log(e);
             this.touchStart(e.touches[0].pageX, e.touches[0].pageY);
             this.mousedown = true;
         }.bind(this), false);
