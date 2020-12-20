@@ -5,12 +5,12 @@ const Phase_1 = require("./Phase");
 const Resulting_1 = require("./Resulting");
 const Message_1 = require("../Message");
 class Guessing extends Phase_1.State {
-    constructor(roomID, word) {
+    constructor(roomID, word, timeout) {
         super();
         this.score = new Map();
         this.roomID = roomID;
         this.word = word;
-        this.Timeout = 7;
+        this.Timeout = timeout;
     }
     Transition(resolve) {
         super.Transition(resolve);

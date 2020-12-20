@@ -31,7 +31,7 @@ class Turn {
   }
 
   public startPhase(): Promise<any> {
-    this.currentPhase = new Prepare(this.roomID);
+    this.currentPhase = new Prepare(this.roomID, this.remainTime);
     console.log(this.turn.getName() + "의 턴입니다");
 
     let TurnFinished = new Promise((resolve, reject) => {

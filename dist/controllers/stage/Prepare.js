@@ -7,10 +7,11 @@ const data_1 = require("../data");
 const Resulting_1 = require("./Resulting");
 const Message_1 = require("../Message");
 class Prepare extends Phase_1.State {
-    constructor(roomID) {
+    constructor(roomID, timeout) {
         super();
         this.roomID = roomID;
         this.Timeout = 5;
+        this.timeoutForGuess = timeout;
     }
     // 1. 플레이어가 선택을 했을 때.
     // 2. TimeOut 되었을때. -> 랜덤으로 그냥 하나 선택함.
@@ -34,7 +35,7 @@ class Prepare extends Phase_1.State {
             this.selectedWord = this.words[randIdx];
             //확정된 제시어 전송
             this.sHandler.sendGameCMD(this.roomID, new Message_1.Cmd_Transition(Message_1.PhaseType.guess, this.selectedWord));
-            this.suspendAllTask(new Guessing_1.Guessing(this.roomID, this.selectedWord));
+            this.suspendAllTask(new Guessing_1.Guessing(this.roomID, this.selectedWord, this.timeoutForGuess));
         }, this.Timeout * 1000);
     }
     TurnDo(user, msg) {
@@ -46,7 +47,7 @@ class Prepare extends Phase_1.State {
         console.log("selected is " + this.selectedWord);
         //확정된 제시어 에코 전송
         this.sHandler.sendGameCMD(this.roomID, new Message_1.Cmd_Transition(Message_1.PhaseType.guess, this.selectedWord));
-        this.suspendAllTask(new Guessing_1.Guessing(this.roomID, this.selectedWord));
+        this.suspendAllTask(new Guessing_1.Guessing(this.roomID, this.selectedWord, this.timeoutForGuess));
     }
     stopPhase() {
         // 3. 해당 턴 플레이어가 Prepare 단계에서 퇴장했을때.
