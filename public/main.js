@@ -401,7 +401,8 @@ class CanvasController {
         }
         window.onresize = function (event) {
             console.log('resize', event);
-        };
+            this.init();
+        }.bind(this);
     }
 }
 class ChatContainer {
@@ -419,6 +420,9 @@ class ChatContainer {
     }
     push(msg) {
         this.chats.push(msg);
+        //스크롤 최하단 고정
+        let ele = document.querySelector('.chattingView');
+        ele.scrollTop = ele.scrollHeight;
     }
 }
 class Chat {
@@ -1236,9 +1240,6 @@ class RoomComponent {
             });
             this.socket.on('chat-msg', (msg) => {
                 this.chatList.push(_draw__WEBPACK_IMPORTED_MODULE_1__["Chat"].UserMsg(msg.from, msg.data));
-                //스크롤 최하단 고정
-                let ele = document.querySelector('.chattingView');
-                ele.scrollTop = ele.scrollHeight;
             });
             this.socket.on('game-msg', function (msg) {
                 _draw__WEBPACK_IMPORTED_MODULE_1__["game_cmd_Handler"].getInstance().msg_Handler(msg);
@@ -1279,7 +1280,7 @@ class RoomComponent {
     }
 }
 RoomComponent.ɵfac = function RoomComponent_Factory(t) { return new (t || RoomComponent)(_angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdirectiveInject"](_angular_router__WEBPACK_IMPORTED_MODULE_4__["ActivatedRoute"])); };
-RoomComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineComponent"]({ type: RoomComponent, selectors: [["ng-component"]], decls: 31, vars: 12, consts: [[1, "row", "justify-content-between"], [1, "col-md-10"], [1, "col-auto"], [4, "ngIf"], ["id", "host-section", "style", "\n    border: 1px solid lightgray;\n    margin-bottom: 7px;\n    background-color: whitesmoke;\n    padding: 5px;\n  ", 4, "ngIf"], [1, "row"], [1, "col-12", "col-md-2"], [2, "padding", "0px", "background-color", "whitesmoke", 3, "users", "hostUser"], [1, "col-12", "col-md-7", 2, "padding", "0px", "height", "100%"], ["id", "word-section", 1, "row", "justify-content-center", 2, "padding-bottom", "7px"], ["id", "word-select", "class", "col-auto", 4, "ngIf"], ["class", "col-auto", 4, "ngIf"], [1, "input-group"], ["type", "text", "placeholder", "Endter Guess!", "aria-describedby", "basic-addon2", 1, "form-control", 3, "ngModel", "ngModelChange"], [1, "input-group-append"], ["type", "button", 1, "btn", "btn-outline-primary", 3, "click"], [1, "col-12", "col-md-3"], [2, "border", "1px solid lightgray", "background-color", "whitesmoke"], [3, "chatContainer"], [1, "input-group", "mb-3"], ["type", "text", "placeholder", "\uBA54\uC2DC\uC9C0\uB97C \uC785\uB825\uD558\uC138\uC694.", "aria-describedby", "basic-addon2", 1, "form-control", 3, "ngModel", "ngModelChange"], ["id", "host-section", 2, "border", "1px solid lightgray", "margin-bottom", "7px", "background-color", "whitesmoke", "padding", "5px"], ["class", "row g-2 justify-content-end align-items-center", 4, "ngIf"], [1, "row", "g-2", "justify-content-end", "align-items-center"], ["for", "game-round", 1, "col-auto"], ["type", "text", "id", "game-round", "value", "2", 1, "form-control", "btn-sm", 3, "ngModel", "ngModelChange"], ["for", "game-timeout", 1, "col-auto"], ["type", "text", "id", "game-timeout", "value", "20", "placeholder", "\uCD08 \uB2E8\uC704\uB85C \uC785\uB825", 1, "form-control", "btn-sm", 3, "ngModel", "ngModelChange"], ["type", "submit", 1, "btn", "btn-primary", "btn-sm", 3, "click"], ["id", "word-select", 1, "col-auto"], ["role", "group", "aria-label", "Basic outlined example", 1, "btn-group"]], template: function RoomComponent_Template(rf, ctx) { if (rf & 1) {
+RoomComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineComponent"]({ type: RoomComponent, selectors: [["ng-component"]], decls: 31, vars: 12, consts: [[1, "row", "justify-content-between"], [1, "col-md-10"], [1, "col-auto"], [4, "ngIf"], ["id", "host-section", "style", "\n    border: 1px solid lightgray;\n    margin-bottom: 7px;\n    background-color: whitesmoke;\n    padding: 5px;\n  ", 4, "ngIf"], [1, "row"], [1, "col-12", "col-md-2"], [2, "padding", "0px", "background-color", "whitesmoke", 3, "users", "hostUser"], [1, "col-12", "col-md-7", 2, "padding", "0px", "height", "100%"], ["id", "word-section", 1, "row", "justify-content-center", 2, "padding-bottom", "7px"], ["id", "word-select", "class", "col-auto", 4, "ngIf"], ["class", "col-auto", 4, "ngIf"], [1, "input-group"], ["type", "text", "placeholder", "Endter Guess!", "aria-describedby", "basic-addon2", 1, "form-control", 3, "ngModel", "ngModelChange"], [1, "input-group-append"], ["type", "button", 1, "btn", "btn-outline-primary", 3, "click"], [1, "col-12", "col-md-3"], [2, "border", "1px solid lightgray", "background-color", "whitesmoke"], [3, "chatContainer"], [1, "input-group", "mb-3"], ["type", "text", "placeholder", "\uBA54\uC2DC\uC9C0\uB97C \uC785\uB825\uD558\uC138\uC694.", "aria-describedby", "basic-addon2", 1, "form-control", 3, "ngModel", "ngModelChange"], ["id", "host-section", 2, "border", "1px solid lightgray", "margin-bottom", "7px", "background-color", "whitesmoke", "padding", "5px"], ["class", "row g-2 justify-content-end align-items-center", 4, "ngIf"], [1, "row", "g-2", "justify-content-end", "align-items-center"], ["for", "game-round", 1, "col-auto"], ["name", "game-round", "type", "text", "id", "game-round", "value", "2", 1, "form-control", "btn-sm", 3, "ngModel", "ngModelChange"], ["for", "game-timeout", 1, "col-auto"], ["name", "game-timeout", "type", "text", "id", "game-timeout", "value", "20", "placeholder", "\uCD08 \uB2E8\uC704\uB85C \uC785\uB825", 1, "form-control", "btn-sm", 3, "ngModel", "ngModelChange"], ["type", "submit", 1, "btn", "btn-primary", "btn-sm", 3, "click"], ["id", "word-select", 1, "col-auto"], ["role", "group", "aria-label", "Basic outlined example", 1, "btn-group"]], template: function RoomComponent_Template(rf, ctx) { if (rf & 1) {
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](0, "div", 0);
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](1, "div", 1);
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](2, "h3");
