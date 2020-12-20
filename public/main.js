@@ -400,6 +400,7 @@ class CanvasController {
             this.ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
         }
         window.onresize = function (event) {
+            this.canvas.style.width = '100%';
             console.log('resize', event);
             this.init();
         }.bind(this);
