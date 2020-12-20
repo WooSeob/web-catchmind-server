@@ -231,7 +231,7 @@ class HomeComponent {
 HomeComponent.ɵfac = function HomeComponent_Factory(t) { return new (t || HomeComponent)(); };
 HomeComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineComponent"]({ type: HomeComponent, selectors: [["app-home"]], decls: 6, vars: 0, consts: [["routerLink", "room/1234"], ["routerLink", "room/7777"]], template: function HomeComponent_Template(rf, ctx) { if (rf & 1) {
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](0, "h1");
-        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtext"](1, "Wellcom to Catch M!nd!!");
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtext"](1, "Welcome to Catch M!nd!!");
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](2, "p", 0);
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtext"](3, "Room#1234");
@@ -399,6 +399,9 @@ class CanvasController {
             this.canvas.style.height = `${hidefCanvasCssHeight}px`;
             this.ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
         }
+        window.onresize = function (event) {
+            console.log('resize', event);
+        };
     }
 }
 class ChatContainer {
@@ -987,25 +990,35 @@ function RoomComponent_div_6_form_1_Template(rf, ctx) { if (rf & 1) {
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtext"](2, "\uB77C\uC6B4\uB4DC");
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](3, "div", 2);
-    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelement"](4, "input", 25);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](4, "input", 25);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵlistener"]("ngModelChange", function RoomComponent_div_6_form_1_Template_input_ngModelChange_4_listener($event) { _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵrestoreView"](_r7); const ctx_r6 = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵnextContext"](2); return ctx_r6.setRound = $event; });
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](5, "label", 26);
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtext"](6, "\uC81C\uD55C\uC2DC\uAC04");
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](7, "div", 2);
-    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelement"](8, "input", 27);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](8, "input", 27);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵlistener"]("ngModelChange", function RoomComponent_div_6_form_1_Template_input_ngModelChange_8_listener($event) { _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵrestoreView"](_r7); const ctx_r8 = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵnextContext"](2); return ctx_r8.setTimeout = $event; });
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](9, "div", 2);
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](10, "button", 28);
-    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵlistener"]("click", function RoomComponent_div_6_form_1_Template_button_click_10_listener() { _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵrestoreView"](_r7); const ctx_r6 = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵnextContext"](2); return ctx_r6.gameStart(); });
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵlistener"]("click", function RoomComponent_div_6_form_1_Template_button_click_10_listener() { _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵrestoreView"](_r7); const ctx_r9 = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵnextContext"](2); return ctx_r9.gameStart(); });
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtext"](11, " \uAC8C\uC784 \uC2DC\uC791 ");
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
+} if (rf & 2) {
+    const ctx_r5 = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵnextContext"](2);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"](4);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("ngModel", ctx_r5.setRound);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"](4);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("ngModel", ctx_r5.setTimeout);
 } }
 function RoomComponent_div_6_Template(rf, ctx) { if (rf & 1) {
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](0, "div", 21);
-    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtemplate"](1, RoomComponent_div_6_form_1_Template, 12, 0, "form", 22);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtemplate"](1, RoomComponent_div_6_form_1_Template, 12, 2, "form", 22);
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
 } if (rf & 2) {
     const ctx_r1 = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵnextContext"]();
@@ -1013,19 +1026,19 @@ function RoomComponent_div_6_Template(rf, ctx) { if (rf & 1) {
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("ngIf", !ctx_r1.gameHandler.isInGame);
 } }
 function RoomComponent_div_12_Template(rf, ctx) { if (rf & 1) {
-    const _r9 = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵgetCurrentView"]();
+    const _r11 = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵgetCurrentView"]();
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](0, "div", 29);
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](1, "div", 30);
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](2, "button", 15);
-    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵlistener"]("click", function RoomComponent_div_12_Template_button_click_2_listener() { _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵrestoreView"](_r9); const ctx_r8 = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵnextContext"](); return ctx_r8.selectWord0(); });
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵlistener"]("click", function RoomComponent_div_12_Template_button_click_2_listener() { _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵrestoreView"](_r11); const ctx_r10 = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵnextContext"](); return ctx_r10.selectWord0(); });
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtext"](3);
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](4, "button", 15);
-    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵlistener"]("click", function RoomComponent_div_12_Template_button_click_4_listener() { _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵrestoreView"](_r9); const ctx_r10 = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵnextContext"](); return ctx_r10.selectWord1(); });
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵlistener"]("click", function RoomComponent_div_12_Template_button_click_4_listener() { _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵrestoreView"](_r11); const ctx_r12 = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵnextContext"](); return ctx_r12.selectWord1(); });
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtext"](5);
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](6, "button", 15);
-    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵlistener"]("click", function RoomComponent_div_12_Template_button_click_6_listener() { _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵrestoreView"](_r9); const ctx_r11 = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵnextContext"](); return ctx_r11.selectWord2(); });
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵlistener"]("click", function RoomComponent_div_12_Template_button_click_6_listener() { _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵrestoreView"](_r11); const ctx_r13 = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵnextContext"](); return ctx_r13.selectWord2(); });
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtext"](7);
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
     _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
@@ -1090,14 +1103,22 @@ class RoomComponent {
         }
     }
     gameStart() {
-        let gameSetting = {
-            type: 'start',
-            data: {
-                round: 2,
-                timeout: 10,
-            },
-        };
-        this.socket.emit('game-cmd', gameSetting);
+        if (this.setRound > 0 &&
+            this.setRound < 5 &&
+            this.setTimeout > 5 &&
+            this.setTimeout < 180) {
+            let gameSetting = {
+                type: 'start',
+                data: {
+                    round: this.setRound,
+                    timeout: this.setTimeout,
+                },
+            };
+            this.socket.emit('game-cmd', gameSetting);
+        }
+        else {
+            alert("라운드는 1~4, 제한시간은 6~179초 이내로 입력해주세요");
+        }
     }
     penUp() {
         if (this.mousedown &&
@@ -1258,7 +1279,7 @@ class RoomComponent {
     }
 }
 RoomComponent.ɵfac = function RoomComponent_Factory(t) { return new (t || RoomComponent)(_angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdirectiveInject"](_angular_router__WEBPACK_IMPORTED_MODULE_4__["ActivatedRoute"])); };
-RoomComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineComponent"]({ type: RoomComponent, selectors: [["ng-component"]], decls: 31, vars: 12, consts: [[1, "row", "justify-content-between"], [1, "col-md-10"], [1, "col-auto"], [4, "ngIf"], ["id", "host-section", "style", "\n    border: 1px solid lightgray;\n    margin-bottom: 7px;\n    background-color: whitesmoke;\n    padding: 5px;\n  ", 4, "ngIf"], [1, "row"], [1, "col-12", "col-md-2"], [2, "padding", "0px", "background-color", "whitesmoke", 3, "users", "hostUser"], [1, "col-12", "col-md-7", 2, "padding", "0px", "height", "100%"], ["id", "word-section", 1, "row", "justify-content-center", 2, "padding-bottom", "7px"], ["id", "word-select", "class", "col-auto", 4, "ngIf"], ["class", "col-auto", 4, "ngIf"], [1, "input-group"], ["type", "text", "placeholder", "Endter Guess!", "aria-describedby", "basic-addon2", 1, "form-control", 3, "ngModel", "ngModelChange"], [1, "input-group-append"], ["type", "button", 1, "btn", "btn-outline-primary", 3, "click"], [1, "col-12", "col-md-3"], [2, "border", "1px solid lightgray", "background-color", "whitesmoke"], [3, "chatContainer"], [1, "input-group", "mb-3"], ["type", "text", "placeholder", "\uBA54\uC2DC\uC9C0\uB97C \uC785\uB825\uD558\uC138\uC694.", "aria-describedby", "basic-addon2", 1, "form-control", 3, "ngModel", "ngModelChange"], ["id", "host-section", 2, "border", "1px solid lightgray", "margin-bottom", "7px", "background-color", "whitesmoke", "padding", "5px"], ["class", "row g-2 justify-content-end align-items-center", 4, "ngIf"], [1, "row", "g-2", "justify-content-end", "align-items-center"], ["for", "game-round", 1, "col-auto"], ["type", "text", "id", "game-round", "value", "2", 1, "form-control", "btn-sm"], ["for", "game-timeout", 1, "col-auto"], ["type", "text", "id", "game-timeout", "value", "20", "placeholder", "\uCD08 \uB2E8\uC704\uB85C \uC785\uB825", 1, "form-control", "btn-sm"], ["type", "submit", 1, "btn", "btn-primary", "btn-sm", 3, "click"], ["id", "word-select", 1, "col-auto"], ["role", "group", "aria-label", "Basic outlined example", 1, "btn-group"]], template: function RoomComponent_Template(rf, ctx) { if (rf & 1) {
+RoomComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineComponent"]({ type: RoomComponent, selectors: [["ng-component"]], decls: 31, vars: 12, consts: [[1, "row", "justify-content-between"], [1, "col-md-10"], [1, "col-auto"], [4, "ngIf"], ["id", "host-section", "style", "\n    border: 1px solid lightgray;\n    margin-bottom: 7px;\n    background-color: whitesmoke;\n    padding: 5px;\n  ", 4, "ngIf"], [1, "row"], [1, "col-12", "col-md-2"], [2, "padding", "0px", "background-color", "whitesmoke", 3, "users", "hostUser"], [1, "col-12", "col-md-7", 2, "padding", "0px", "height", "100%"], ["id", "word-section", 1, "row", "justify-content-center", 2, "padding-bottom", "7px"], ["id", "word-select", "class", "col-auto", 4, "ngIf"], ["class", "col-auto", 4, "ngIf"], [1, "input-group"], ["type", "text", "placeholder", "Endter Guess!", "aria-describedby", "basic-addon2", 1, "form-control", 3, "ngModel", "ngModelChange"], [1, "input-group-append"], ["type", "button", 1, "btn", "btn-outline-primary", 3, "click"], [1, "col-12", "col-md-3"], [2, "border", "1px solid lightgray", "background-color", "whitesmoke"], [3, "chatContainer"], [1, "input-group", "mb-3"], ["type", "text", "placeholder", "\uBA54\uC2DC\uC9C0\uB97C \uC785\uB825\uD558\uC138\uC694.", "aria-describedby", "basic-addon2", 1, "form-control", 3, "ngModel", "ngModelChange"], ["id", "host-section", 2, "border", "1px solid lightgray", "margin-bottom", "7px", "background-color", "whitesmoke", "padding", "5px"], ["class", "row g-2 justify-content-end align-items-center", 4, "ngIf"], [1, "row", "g-2", "justify-content-end", "align-items-center"], ["for", "game-round", 1, "col-auto"], ["type", "text", "id", "game-round", "value", "2", 1, "form-control", "btn-sm", 3, "ngModel", "ngModelChange"], ["for", "game-timeout", 1, "col-auto"], ["type", "text", "id", "game-timeout", "value", "20", "placeholder", "\uCD08 \uB2E8\uC704\uB85C \uC785\uB825", 1, "form-control", "btn-sm", 3, "ngModel", "ngModelChange"], ["type", "submit", 1, "btn", "btn-primary", "btn-sm", 3, "click"], ["id", "word-select", 1, "col-auto"], ["role", "group", "aria-label", "Basic outlined example", 1, "btn-group"]], template: function RoomComponent_Template(rf, ctx) { if (rf & 1) {
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](0, "div", 0);
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](1, "div", 1);
         _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](2, "h3");
