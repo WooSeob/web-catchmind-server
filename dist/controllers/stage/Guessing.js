@@ -20,7 +20,6 @@ class Guessing extends Phase_1.State {
             console.log("guessing 종료.");
             console.log("- guess result -");
             this.sHandler.sendGameCMD(this.roomID, new Message_1.Cmd_Transition(Message_1.PhaseType.result, this.score));
-            console.log(this.score);
             this.suspendAllTask(new Resulting_1.Resulting(this.roomID, this.score));
         }, this.Timeout * 1000);
     }

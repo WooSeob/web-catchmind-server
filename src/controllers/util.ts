@@ -41,7 +41,9 @@ export class PlayerQueue {
     this.current = this.current.next;
     return this.current.user;
   }
-
+  getCurrent(): User {
+    return this.current.user;
+  }
   isHead(): boolean {
     return this.current == this.head;
   }

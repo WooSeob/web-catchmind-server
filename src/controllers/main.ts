@@ -4,7 +4,14 @@
 import { Game } from "./gameLogic";
 import { User, JoinData, DrawData, Score } from "./data";
 import socket_io, { Server } from "socket.io";
-import { Cmd_GameStart, Cmd_Message, Msg_Message, Sys_Message } from "./Message"
+import {
+  Cmd_GameStart,
+  Cmd_Message,
+  GameMsg,
+  Msg_Message,
+  StateType,
+  Sys_Message,
+} from "./Message";
 // var userListByRoom = new Map();
 var RoomPool: Map<string, Room> = new Map();
 
@@ -65,7 +72,7 @@ class Room {
     console.log("draw cmd: " + drawData);
   }
   onDisconnect(user: User): void {
-    console.log("user disconnected");
+    console.log("user disconnected" + user.getName());
 
     if (this.userList.length == 1) {
       //마지막 한명이 나가면 방폭
@@ -104,6 +111,7 @@ class Room {
   }
   onStart(user: User, gameSet: any): void {
     if (user == this.hostUser && !this.game.inGame()) {
+      console.log("onStart,", gameSet);
       this.game.setGame(this.userList, gameSet.round, gameSet.timeout);
 
       //게임 시작하니까 리스트 전달
@@ -180,15 +188,15 @@ export class SocketHandler {
     }
   }
 
-  sendGameCMD(roomID:string, cmd_message:Cmd_Message){
-    this.io.sockets.in(roomID).emit("game-cmd", cmd_message);
+  sendGameSync(roomID: string, State: StateType) {
+    this.io.sockets.in(roomID).emit("game-sync", State);
   }
 
-  sendGameMsg(roomID:string, msg_message: Msg_Message){
-    this.io.sockets.in(roomID).emit("game-msg", msg_message);
+  sendGameMsg(roomID: string, gameMsg: GameMsg) {
+    this.io.sockets.in(roomID).emit("game-msg", gameMsg);
   }
-  
-  sendSysMsg(roomID:string, sys_Message: Sys_Message){
+
+  sendSysMsg(roomID: string, sys_Message: Sys_Message) {
     this.io.sockets.in(roomID).emit("sys-msg", sys_Message);
   }
 

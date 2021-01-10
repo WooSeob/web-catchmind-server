@@ -1,4 +1,6 @@
 import socket_io, { Server } from "socket.io";
+import { SocketHandler } from "./main";
+import { GameMsg } from "./Message";
 
 export class User {
   constructor(name: string, socket: socket_io.Socket, roomID: string) {
@@ -25,6 +27,32 @@ export class User {
   }
 }
 
+// ~가 맞췄습니다 (id, 점수)
+export interface Hit {
+  user: string;
+  score: number;
+}
+
+export interface Command {
+  excute(): void;
+}
+
+export class NoCommand implements Command {
+  excute(): void {}
+}
+
+export class MsgSenderCommand implements Command {
+  private roomID: string;
+  private Msg: GameMsg;
+  constructor(roomID: string, msg: GameMsg) {
+    this.roomID = roomID;
+    this.Msg = msg;
+  }
+  excute(): void {
+    // console.log("MsgSenderCommand excuted");
+    SocketHandler.getInstance().sendGameMsg(this.roomID, this.Msg);
+  }
+}
 export interface JoinData {
   roomID: string;
   user: User;
@@ -47,19 +75,30 @@ export const WORD_POOL: String[] = [
 
 export class Score {
   constructor() {
+    this.initialize();
+  }
+  public initialize() {
     this.score = 0;
     this.correct = false;
     this.turn = false;
   }
-
-  matched(score: number) {
+  public matched(score: number) {
     this.correct = true;
     this.score += score;
   }
-  turnClear() {
+  public turnClear() {
     this.correct = false;
   }
-  score: number;
-  correct: boolean;
-  turn: boolean;
+  public getScore(): number {
+    return this.score;
+  }
+  public isCorrect(): boolean {
+    return this.correct;
+  }
+  public isTurn(): boolean {
+    return this.turn;
+  }
+  private score: number;
+  private correct: boolean;
+  private turn: boolean;
 }

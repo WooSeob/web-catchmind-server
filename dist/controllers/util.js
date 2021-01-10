@@ -42,6 +42,9 @@ class PlayerQueue {
         this.current = this.current.next;
         return this.current.user;
     }
+    getCurrent() {
+        return this.current.user;
+    }
     isHead() {
         return this.current == this.head;
     }

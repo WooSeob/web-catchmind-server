@@ -56,7 +56,7 @@ class Room {
         console.log("draw cmd: " + drawData);
     }
     onDisconnect(user) {
-        console.log("user disconnected");
+        console.log("user disconnected" + user.getName());
         if (this.userList.length == 1) {
             //마지막 한명이 나가면 방폭
             RoomPool.delete(this.roomID);
@@ -91,6 +91,7 @@ class Room {
     }
     onStart(user, gameSet) {
         if (user == this.hostUser && !this.game.inGame()) {
+            console.log("onStart,", gameSet);
             this.game.setGame(this.userList, gameSet.round, gameSet.timeout);
             //게임 시작하니까 리스트 전달
             let io = SocketHandler.getInstance().getIo();
@@ -156,11 +157,11 @@ class SocketHandler {
             return null;
         }
     }
-    sendGameCMD(roomID, cmd_message) {
-        this.io.sockets.in(roomID).emit("game-cmd", cmd_message);
+    sendGameSync(roomID, State) {
+        this.io.sockets.in(roomID).emit("game-sync", State);
     }
-    sendGameMsg(roomID, msg_message) {
-        this.io.sockets.in(roomID).emit("game-msg", msg_message);
+    sendGameMsg(roomID, gameMsg) {
+        this.io.sockets.in(roomID).emit("game-msg", gameMsg);
     }
     sendSysMsg(roomID, sys_Message) {
         this.io.sockets.in(roomID).emit("sys-msg", sys_Message);
