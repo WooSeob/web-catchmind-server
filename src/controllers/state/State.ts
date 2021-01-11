@@ -12,6 +12,7 @@ export abstract class State {
   protected roomID: string;
   protected io: socket_io.Server;
   protected sHandler: SocketHandler;
+  protected initMsg: GameMsg;
   public readonly Type: StateType;
 
   constructor(game: Game) {
@@ -19,6 +20,10 @@ export abstract class State {
     this.io = this.sHandler.getIo();
     this.game = game;
     this.roomID = game.getRoomID();
+    this.initMsg = {
+      key: null,
+      value: null,
+    };
   }
 
   abstract onActivated(): void;
@@ -26,8 +31,11 @@ export abstract class State {
   abstract NotTurnDo(user: User, msg: any): void;
   abstract notifyTimer(): void;
 
+  getMsg(): GameMsg {
+    return this.initMsg;
+  }
   setTimeOut(time: number) {
-    //this.Timeout = time;
+    this.Timeout = time;
   }
 
   timer(): void {

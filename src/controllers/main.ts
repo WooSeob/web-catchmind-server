@@ -2,7 +2,7 @@
 
 //TODO 잘못된 접근 대응하기
 import { Game } from "./gameLogic";
-import { User, JoinData, DrawData, Score } from "./data";
+import { User, JoinData, DrawData, Score, RestoreMsgSenderCmd } from "./data";
 import socket_io, { Server } from "socket.io";
 import {
   Cmd_GameStart,
@@ -27,12 +27,17 @@ class Room {
 
   private game: Game;
 
+  public isInGame(): boolean {
+    return this.game.inGame();
+  }
+  public getGame() {
+    return this.game;
+  }
   getUsersInfo() {
     // let users = this.userList.map((u) => u.getName());
     let userListData = {
       host: this.hostUser.getName(),
       users: this.userList,
-      participants: this.game.getParticipants().map((u) => u.getName()),
     };
     return userListData;
   }
@@ -140,12 +145,6 @@ class Room {
     console.log("user" + user.getName() + " has joined");
     this.userList.push(user);
 
-    // let users = this.userList.map((u) => u.getName());
-
-    // userListData.participants = this.game
-    //   .getParticipants()
-    //   .map((u) => u.getName());
-
     //새로운 유저 전달
     let userJoinData = {
       type: "user-join",
@@ -226,9 +225,13 @@ export class SocketHandler {
         data: room.getUsersInfo(),
       };
       socket.emit("sys-msg", welcomeMsg);
+      if (room.isInGame()) {
+        new RestoreMsgSenderCmd(room.getGame(), socket).excute();
+      }
     });
 
     socket.on("disconnect", () => {
+      console.log("disconnect event");
       room.onDisconnect(thisUser);
     });
 

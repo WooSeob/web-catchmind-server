@@ -130,8 +130,10 @@ export enum MSG_KEY {
   //result
   TURN_RESULT = "turn_result",
   TURN_USER_LEFT = "turn_user_left",
+  ONLY_ONE_PLAYER = "only_one_player",
   //ready
   GAME_RESULT = "game_result",
   //COMMON
   TIMER = "timer",
+  RESTORE_PUSERS = "restore_pusers",
 }

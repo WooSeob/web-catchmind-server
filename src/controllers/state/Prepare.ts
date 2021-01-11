@@ -19,6 +19,7 @@ export class Prepare extends State {
   // 1. 플레이어가 선택을 했을 때.
   // 2. TimeOut 되었을때. -> 랜덤으로 그냥 하나 선택함.
   // 3. 해당 턴 플레이어가 나갔을떄
+
   onActivated() {
     let randIdx = Math.floor(Math.random() * 6);
     this.words = new Array();
@@ -35,7 +36,8 @@ export class Prepare extends State {
       key: MSG_KEY.NEW_TURN,
       value: prepareData,
     };
-    this.sHandler.sendGameMsg(this.roomID, prepareMsg);
+    this.initMsg = prepareMsg;
+    this.sHandler.sendGameMsg(this.roomID, this.initMsg);
     this.timer();
   }
 
@@ -56,6 +58,7 @@ export class Prepare extends State {
 
     clearInterval(this.RemainTimeTimer);
     this.game.setState(Next);
+    this.game.transitionByTimeOut();
   }
 
   notifyTimer() {

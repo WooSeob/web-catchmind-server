@@ -35,7 +35,7 @@ export class PlayerQueue {
     return users;
   }
   getLength(): number {
-    return length;
+    return this.length;
   }
   nextTurn(): User {
     this.current = this.current.next;

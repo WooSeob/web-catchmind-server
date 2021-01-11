@@ -9,7 +9,6 @@ export class Guessing extends State {
   private score: Map<string, number> = new Map();
   private word: String;
 
-  public setTimeout;
   public setWord(word: String) {
     this.word = word;
   }
@@ -19,6 +18,7 @@ export class Guessing extends State {
       key: MSG_KEY.COMMITTED_WORD,
       value: this.word,
     };
+    this.initMsg = commitMsg;
     this.sHandler.sendGameMsg(this.roomID, commitMsg);
     this.timer();
   }
@@ -28,7 +28,7 @@ export class Guessing extends State {
     // Case 2. Timeout 될 때
     // Result 스테이트로 변경
 
-    clearInterval(this.RemainTimeTimer);
+    this.clearTimer();
     this.game.setState(this.game.getResultState());
     this.game.transitionByTimeOut();
   }

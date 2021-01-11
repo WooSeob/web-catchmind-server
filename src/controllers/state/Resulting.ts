@@ -17,19 +17,20 @@ export class Resulting extends State {
   public onActivated() {
     // 결과 종합
     let turnResult: Hit[] = [];
-    this.game.getParticipants().map((user) => {
+    for (let user of this.game.getParticipants()) {
       let hitData: Hit = {
         user: user.getName(),
         score: user.score.getScore(),
       };
       turnResult.push(hitData);
-    });
+    }
 
     // 해당 턴 결과 전송
     let turnResultMsg: GameMsg = {
       key: MSG_KEY.TURN_RESULT,
       value: turnResult,
     };
+    this.initMsg = turnResultMsg;
     this.sHandler.sendGameMsg(this.roomID, turnResultMsg);
     this.timer();
   }
@@ -46,7 +47,7 @@ export class Resulting extends State {
       console.log("unit Round finished");
 
       this.game.increaseRound();
-      if (this.game.isGameEnd()) {
+      if (this.game.isGameEnd() || this.game.getParticipants().length < 2) {
         //게임 종료
         this.game.clearGame();
       } else {

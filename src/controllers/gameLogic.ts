@@ -97,8 +97,7 @@ export class Game {
     if (!this.isInGame) {
       this.participants = new PlayerQueue();
       for (let user of users) {
-        user.isParticipant = true;
-        user.score = new Score();
+        user.setParticipant();
         this.participants.addHead(user);
       }
 
@@ -119,6 +118,12 @@ export class Game {
     this.isInGame = false;
     this.currentRound = 1;
     this.isGameReady = false;
+
+    let p: User[] = this.participants.getAllList();
+    p.forEach((user) => {
+      user.exitFromGame();
+    });
+
     //TODO 매번 새로만들지 않고 리셋하는걸로 바꾸기
     this.participants = new PlayerQueue();
 
@@ -189,6 +194,18 @@ export class Game {
   public userDisconnect(user: User): void {
     if (this.isInGame) {
       let isTurnPlayerLeft: boolean = this.participants.removePlayer(user);
+
+      if (this.participants.getLength() < 2) {
+        console.log("총 플레이어가 1명이므로 게임을 종료합니다.");
+        this.setState(this.result);
+
+        // 게임종료 브로드캐스트
+        let taljuMsg: GameMsg = {
+          key: MSG_KEY.ONLY_ONE_PLAYER,
+          value: null,
+        };
+        SocketHandler.getInstance().sendGameMsg(this.roomID, taljuMsg);
+      }
 
       if (isTurnPlayerLeft) {
         console.log("Turn 유저가 나감");
