@@ -29,8 +29,6 @@ class Game {
         this.currentRound++;
     }
     isGameEnd() {
-        console.log(this.EndRound);
-        console.log(this.currentRound);
         return this.EndRound < this.currentRound;
     }
     getState() {
@@ -58,7 +56,7 @@ class Game {
         clearTimeout(this.TransitionTimer);
     }
     setState(state, hook = new data_1.NoCommand()) {
-        this.log("Transition ", state.Type);
+        util_1.Logger.log("Transition ", state.Type);
         this.state.clearTimer();
         this.state = state;
         main_1.SocketHandler.getInstance().sendGameSync(this.roomID, this.state.Type);
@@ -75,8 +73,7 @@ class Game {
         if (!this.isInGame) {
             this.participants = new util_1.PlayerQueue();
             for (let user of users) {
-                user.isParticipant = true;
-                user.score = new data_1.Score();
+                user.setParticipant();
                 this.participants.addHead(user);
             }
             this.EndRound = round;
@@ -90,10 +87,14 @@ class Game {
     }
     clearGame() {
         //게임 모두 종료
-        this.log("game is over!!!");
+        util_1.Logger.log("game is over!!!");
         this.isInGame = false;
         this.currentRound = 1;
         this.isGameReady = false;
+        let p = this.participants.getAllList();
+        p.forEach((user) => {
+            user.exitFromGame();
+        });
         //TODO 매번 새로만들지 않고 리셋하는걸로 바꾸기
         this.participants = new util_1.PlayerQueue();
         //게임 오버 메시지
@@ -141,7 +142,7 @@ class Game {
         return this.participants.isHead();
     }
     MsgHandler(user, msg) {
-        console.log("Message from - " + user.getName() + " : " + msg);
+        // Logger.log("Message received", user, msg);
         if (user.getName() === this.turn.getName()) {
             this.state.TurnDo(user, msg);
         }
@@ -152,10 +153,22 @@ class Game {
     userDisconnect(user) {
         if (this.isInGame) {
             let isTurnPlayerLeft = this.participants.removePlayer(user);
+            if (this.participants.getLength() < 2) {
+                util_1.Logger.log("총 플레이어가 1명이므로 게임을 종료합니다.");
+                this.setState(this.result);
+                // this.transitionByTimeOut();
+                // 게임종료 브로드캐스트
+                let taljuMsg = {
+                    key: Message_1.MSG_KEY.ONLY_ONE_PLAYER,
+                    value: null,
+                };
+                main_1.SocketHandler.getInstance().sendGameMsg(this.roomID, taljuMsg);
+            }
             if (isTurnPlayerLeft) {
-                console.log("Turn 유저가 나감");
+                util_1.Logger.log("Turn 유저가 나감");
                 // Result State로 이동
                 this.setState(this.result);
+                // this.transitionByTimeOut();
                 // 턴유저 나간거 브로드캐스트
                 let taljuMsg = {
                     key: Message_1.MSG_KEY.TURN_USER_LEFT,

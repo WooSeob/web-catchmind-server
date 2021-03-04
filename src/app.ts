@@ -3,6 +3,10 @@ import createError from "http-errors";
 import socket_io, { Server } from "socket.io";
 import path from "path";
 import { SocketHandler } from "./controllers/main";
+import { ApiRouter } from "./api/routes";
+import { Logger } from "./controllers/util";
+import mongoose from  "mongoose"
+
 // import path from "path";
 // import cookieParser from "cookie-parser";
 // import logger from "morgan";
@@ -25,9 +29,26 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
 // app.use(cookieParser());
 // app.use(express.static(path.join(__dirname, "public")));
+
+app.get("*", function (req, res, next) {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
 app.use(function (req, res, next) {
   next(createError(404));
 });
+
+app.use("/api", (req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "http://172.30.1.20:4200");
+  res.header(
+    "Access-Control-Allow-headers",
+    "Origin, X-Requested-with, \
+  Content-Type, Accept, Authorization"
+  );
+  next();
+});
+
+app.use("/api", new ApiRouter().getRouter());
 
 // error handler
 app.use(function (err, req, res, next) {
@@ -49,7 +70,7 @@ var http = require("http").createServer(app);
 
 var io: socket_io.Server = new Server(http, {
   cors: {
-    origin: "http://localhost:4200",
+    origin: "http://172.30.1.20:4200",
     methods: ["GET", "POST"],
   },
 });
@@ -57,7 +78,6 @@ SocketHandler.createInstance(io);
 
 // var handler = require("./controllers/main").getHandler(io);
 // io.sockets.on("connect", handler);
-
 module.exports = {
   app,
   httpServer: http,

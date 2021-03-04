@@ -1,7 +1,5 @@
 import {
   User,
-  WORD_POOL,
-  Score,
   Command,
   NoCommand,
   MsgSenderCommand,
@@ -12,7 +10,7 @@ import socket_io, { Server } from "socket.io";
 import { Ready } from "./state/Ready";
 import { Prepare } from "./state/Prepare";
 import { State } from "./state/State";
-import { PlayerQueue } from "./util";
+import { Logger, PlayerQueue } from "./util";
 import { Guessing } from "./state/Guessing";
 import { Resulting } from "./state/Resulting";
 import { GameMsg, MSG_KEY } from "./Message";
@@ -50,8 +48,6 @@ export class Game {
     this.currentRound++;
   }
   public isGameEnd(): boolean {
-    console.log(this.EndRound);
-    console.log(this.currentRound);
     return this.EndRound < this.currentRound;
   }
   public getState(): State {
@@ -79,7 +75,7 @@ export class Game {
     clearTimeout(this.TransitionTimer);
   }
   public setState(state: State, hook: Command = new NoCommand()) {
-    this.log("Transition ", state.Type);
+    Logger.log("Transition ", state.Type);
     this.state.clearTimer();
     this.state = state;
     SocketHandler.getInstance().sendGameSync(this.roomID, this.state.Type);
@@ -114,7 +110,7 @@ export class Game {
 
   public clearGame(): void {
     //게임 모두 종료
-    this.log("game is over!!!");
+    Logger.log("game is over!!!");
     this.isInGame = false;
     this.currentRound = 1;
     this.isGameReady = false;
@@ -182,7 +178,7 @@ export class Game {
   }
 
   public MsgHandler(user: User, msg: any): void {
-    console.log("Message from - " + user.getName() + " : " + msg);
+    // Logger.log("Message received", user, msg);
 
     if (user.getName() === this.turn.getName()) {
       this.state.TurnDo(user, msg);
@@ -196,9 +192,9 @@ export class Game {
       let isTurnPlayerLeft: boolean = this.participants.removePlayer(user);
 
       if (this.participants.getLength() < 2) {
-        console.log("총 플레이어가 1명이므로 게임을 종료합니다.");
+        Logger.log("총 플레이어가 1명이므로 게임을 종료합니다.");
         this.setState(this.result);
-
+        // this.transitionByTimeOut();
         // 게임종료 브로드캐스트
         let taljuMsg: GameMsg = {
           key: MSG_KEY.ONLY_ONE_PLAYER,
@@ -208,9 +204,10 @@ export class Game {
       }
 
       if (isTurnPlayerLeft) {
-        console.log("Turn 유저가 나감");
+        Logger.log("Turn 유저가 나감");
         // Result State로 이동
         this.setState(this.result);
+        // this.transitionByTimeOut();
 
         // 턴유저 나간거 브로드캐스트
         let taljuMsg: GameMsg = {

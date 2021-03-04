@@ -40,7 +40,7 @@ export class Guessing extends State {
   NotTurnDo(user: User, msg: any): void {
     let PLUS_SCORE: number = 100;
     //TODO 똥냄새?
-    if (this.word == msg && !this.score.get(user.getRoomID())) {
+    if (this.word == msg && !user.score.isCorrect() && !this.score.get(user.getRoomID())) {
       this.score.set(user.getName(), PLUS_SCORE);
       user.score.matched(PLUS_SCORE);
 

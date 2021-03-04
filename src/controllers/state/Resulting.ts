@@ -1,6 +1,7 @@
 import { State } from "./State";
 import { Hit, User } from "../data";
 import { GameMsg, MSG_KEY, StateType } from "../Message";
+import { Logger } from "../util";
 
 export class Resulting extends State {
   public readonly Type: StateType = StateType.result;
@@ -44,7 +45,7 @@ export class Resulting extends State {
     this.game.selectNextTurn();
 
     if (this.game.isRoundFinished()) {
-      console.log("unit Round finished");
+      Logger.log("unit Round finished");
 
       this.game.increaseRound();
       if (this.game.isGameEnd() || this.game.getParticipants().length < 2) {

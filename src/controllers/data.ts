@@ -3,17 +3,21 @@ import { Game } from "./gameLogic";
 import { SocketHandler } from "./main";
 import { GameMsg, MSG_KEY } from "./Message";
 
+import mongoose from "mongoose"
+import { Logger } from "./util";
+import { IWord, IWordDoc, Word } from "../models/db"
+
 export class User {
-  constructor(name: string, socket: socket_io.Socket, roomID: string) {
+  constructor(name: string, socketID: string, roomID: string) {
     this.name = name;
-    // this.socket = socket;
+    this.socketID = socketID;
     this.roomID = roomID;
     this.score = new Score();
     this.isParticipant = false;
   }
   isParticipant: boolean;
   score: Score;
-  socket: socket_io.Socket;
+  socketID: string;
   private roomID: string;
   private name: string;
   // private socket: socket_io.Socket;
@@ -111,17 +115,101 @@ export interface DrawData {
   Y: Number;
 }
 
-export const WORD_POOL: String[] = [
-  "쿤디판다",
-  "스윙스",
-  "래원",
-  "돈까스",
-  "머쉬베놈",
-  "과로사",
-  "저스디스",
-  "스카이민혁",
-];
+export class WordPool{
+  private static words: string[] = [
+    "스윙스",
+    "래원",
+    "돈까스",
+    "머쉬베놈",
+    "과로사",
+    "저스디스",
+    "스카이민혁",
+    "어몽어스",
+    "이영지",
+    "꼬부기",
+    "양반",
+    "퇴학",
+    "우즈베키스탄",
+    "용의자",
+    "제철소",
+    "우거지국",
+    "해수면",
+    "강아지",
+    "소방관",
+    "백수",
+    "잡종",
+    "한경대",
+    "개인기",
+    "비봉관",
+    "카레이서",
+    "초음파",
+    "피카추",
+    "치어리더",
+    "수달",
+    "그네뛰기",
+    "달마이라마",
+    "베토벤",
+    "짱구",
+    "징징이",
+    "스폰지밥",
+    "연장전",
+    "호두나무",
+    "양초",
+    "카카오나무",
+    "태양",
+    "엿장수",
+    "검문소",
+    "둘리",
+    "고길동",
+    "백지",
+  ];
+  
+  static addWord(word: string){
+    Logger.log(this.words)
+    WordPool.words.push(word)
+    
+    if(!Word){
+      console.log("mongoose connection null")
+      return;
+    }
+    Word.findOne({"word": word}, (err, found: IWordDoc)=>{
+      if(err){
+        console.log(err)
+        return;
+      }
+      if(found){
+        found.count = found.count + 1
+        found.save()
+      }else{
+        Word.create({
+          word: word,
+          count: 1
+        })
+      }
+    })
+  }
+  
+  static getWordPool(): string[]{
+    return WordPool.words;
+  }
 
+  static getPoolLength(): number{
+    return WordPool.length
+  }
+
+  static getThreeWordsByRandom(): string[]{
+    let pool_dup = WordPool.words.slice();
+    Logger.log(pool_dup)
+    let selected: string[] = []
+    
+    for(let i = 0; i < 3; i++){
+      let randIdx = Math.floor(Math.random() * pool_dup.length);
+      let e = pool_dup.splice(randIdx, 1)
+      selected.push(e[0])
+    }
+    return selected
+  }
+}
 export class Score {
   constructor() {
     this.initialize();

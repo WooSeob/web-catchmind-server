@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PlayerQueue = void 0;
+exports.Logger = exports.PlayerQueue = void 0;
 class PlayerQueue {
     constructor() {
         this.head = null;
@@ -36,7 +36,7 @@ class PlayerQueue {
         return users;
     }
     getLength() {
-        return length;
+        return this.length;
     }
     nextTurn() {
         this.current = this.current.next;
@@ -108,3 +108,31 @@ class Player {
         this.user = user;
     }
 }
+class Logger {
+    static yyyymmdd(d) {
+        var mm = d.getMonth() + 1;
+        var dd = d.getDate();
+        return [d.getFullYear(),
+            (mm > 9 ? '' : '0') + mm,
+            (dd > 9 ? '' : '0') + dd
+        ].join('-');
+    }
+    ;
+    static hhmmss(d) {
+        var hh = d.getHours();
+        var mm = d.getMinutes();
+        var ss = d.getSeconds();
+        return [(hh > 9 ? '' : '0') + hh,
+            (mm > 9 ? '' : '0') + mm,
+            (ss > 9 ? '' : '0') + ss,
+        ].join(':');
+    }
+    ;
+    static yyyymmddhhmmss(d) {
+        return [Logger.yyyymmdd(d), Logger.hhmmss(d)].join(' ');
+    }
+    static log(...optionalParams) {
+        console.log(Logger.yyyymmddhhmmss(new Date()), ...optionalParams);
+    }
+}
+exports.Logger = Logger;

@@ -1,8 +1,9 @@
 import { State } from "./State";
 import { User } from "../data";
-import { WORD_POOL } from "../data";
+import { WordPool } from "../data";
 import { GameMsg, MSG_KEY, StateType } from "../Message";
 import { Guessing } from "./Guessing";
+import { Logger } from "../util";
 
 // 단어 3개, 턴 유저, 라운드
 interface PrepareData {
@@ -14,19 +15,17 @@ interface PrepareData {
 export class Prepare extends State {
   public readonly Type: StateType = StateType.prepare;
   private selectedWord;
-  private words;
+  private words: string[] = [];
 
   // 1. 플레이어가 선택을 했을 때.
   // 2. TimeOut 되었을때. -> 랜덤으로 그냥 하나 선택함.
   // 3. 해당 턴 플레이어가 나갔을떄
 
   onActivated() {
-    let randIdx = Math.floor(Math.random() * 6);
-    this.words = new Array();
-    this.words.push(WORD_POOL[randIdx]);
-    this.words.push(WORD_POOL[randIdx + 1]);
-    this.words.push(WORD_POOL[randIdx + 2]);
+    Logger.log("onActivated")
+    this.words = WordPool.getThreeWordsByRandom()
 
+    console.log(this.words)
     let prepareData: PrepareData = {
       words: this.words,
       turn: this.game.getTurnName(),

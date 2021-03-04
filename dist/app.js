@@ -8,6 +8,7 @@ const http_errors_1 = __importDefault(require("http-errors"));
 const socket_io_1 = require("socket.io");
 const path_1 = __importDefault(require("path"));
 const main_1 = require("./controllers/main");
+const routes_1 = require("./api/routes");
 // import path from "path";
 // import cookieParser from "cookie-parser";
 // import logger from "morgan";
@@ -27,9 +28,19 @@ app.use(express_1.default.urlencoded({ extended: false }));
 app.use(express_1.default.static(path_1.default.join(__dirname, "public")));
 // app.use(cookieParser());
 // app.use(express.static(path.join(__dirname, "public")));
+app.get("*", function (req, res, next) {
+    res.sendFile(path_1.default.join(__dirname, "public", "index.html"));
+});
 app.use(function (req, res, next) {
     next(http_errors_1.default(404));
 });
+app.use("/api", (req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "http://172.30.1.20:4200");
+    res.header("Access-Control-Allow-headers", "Origin, X-Requested-with, \
+  Content-Type, Accept, Authorization");
+    next();
+});
+app.use("/api", new routes_1.ApiRouter().getRouter());
 // error handler
 app.use(function (err, req, res, next) {
     // set locals, only providing error in development
@@ -47,7 +58,7 @@ var http = require("http").createServer(app);
 // var io: SocketIO.Server = socket_io(http, serverOptions);
 var io = new socket_io_1.Server(http, {
     cors: {
-        origin: "http://localhost:4200",
+        origin: "http://172.30.1.20:4200",
         methods: ["GET", "POST"],
     },
 });
