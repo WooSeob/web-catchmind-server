@@ -1,10 +1,11 @@
 import { State } from "./State";
-import { Hit, User } from "../data";
-import { GameMsg, MSG_KEY, StateType } from "../Message";
-import { Logger } from "../util";
+import { User } from "../../models/data";
+import { Logger } from "../../util";
+import { userHit } from "../../messages/GameData";
+import { StateTypes } from "../../messages/Message";
 
 export class Resulting extends State {
-  public readonly Type: StateType = StateType.result;
+  public readonly Type: StateTypes = StateTypes.result;
   // 1. 모든 플레이어가 OK를 눌렀을 때
   // 2. Timeout 되었을때
 
@@ -17,9 +18,9 @@ export class Resulting extends State {
 
   public onActivated() {
     // 결과 종합
-    let turnResult: Hit[] = [];
+    let turnResult: userHit[] = [];
     for (let user of this.game.getParticipants()) {
-      let hitData: Hit = {
+      let hitData: userHit = {
         user: user.getName(),
         score: user.score.getScore(),
       };
@@ -27,12 +28,11 @@ export class Resulting extends State {
     }
 
     // 해당 턴 결과 전송
-    let turnResultMsg: GameMsg = {
-      key: MSG_KEY.TURN_RESULT,
-      value: turnResult,
-    };
-    this.initMsg = turnResultMsg;
-    this.sHandler.sendGameMsg(this.roomID, turnResultMsg);
+    this.initMsg = this.event.GAME_DATA.msg.TURN_RESULT({
+      result: turnResult,
+    });
+
+    this.room.sendGameMsg(this.initMsg);
     this.timer();
   }
 

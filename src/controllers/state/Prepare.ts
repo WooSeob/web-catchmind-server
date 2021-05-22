@@ -1,9 +1,10 @@
 import { State } from "./State";
-import { User } from "../data";
-import { WordPool } from "../data";
-import { GameMsg, MSG_KEY, StateType } from "../Message";
+import { User } from "../../models/data";
+import { WordPool } from "../../models/data";
 import { Guessing } from "./Guessing";
-import { Logger } from "../util";
+import { Logger } from "../../util";
+import { StateTypes } from "../../messages/Message";
+import { DataMsg } from "../../messages/GameData";
 
 // 단어 3개, 턴 유저, 라운드
 interface PrepareData {
@@ -13,7 +14,7 @@ interface PrepareData {
 }
 
 export class Prepare extends State {
-  public readonly Type: StateType = StateType.prepare;
+  public readonly Type: StateTypes = StateTypes.prepare;
   private selectedWord;
   private words: string[] = [];
 
@@ -22,21 +23,18 @@ export class Prepare extends State {
   // 3. 해당 턴 플레이어가 나갔을떄
 
   onActivated() {
-    Logger.log("onActivated")
-    this.words = WordPool.getThreeWordsByRandom()
+    Logger.log("onActivated");
+    this.words = WordPool.getThreeWordsByRandom();
 
-    console.log(this.words)
-    let prepareData: PrepareData = {
+    console.log(this.words);
+
+    this.initMsg = this.event.GAME_DATA.msg.NEW_TURN({
       words: this.words,
       turn: this.game.getTurnName(),
       round: this.game.getCurrentRound(),
-    };
-    let prepareMsg: GameMsg = {
-      key: MSG_KEY.NEW_TURN,
-      value: prepareData,
-    };
-    this.initMsg = prepareMsg;
-    this.sHandler.sendGameMsg(this.roomID, this.initMsg);
+    });
+    this.room.sendGameMsg(this.initMsg);
+
     this.timer();
   }
 

@@ -1,12 +1,12 @@
-import mongoose, { Schema, model, Model, Document } from "mongoose"
-import { Logger } from "../controllers/util";
-require("dotenv").config()
+import mongoose, { Schema, model, Model, Document } from "mongoose";
+import { Logger } from "../util";
+require("dotenv").config();
 
 //const dbURI = "mongodb://localhost:27017/Loc8r";
 
-const PASSWORD = process.env.DB_PASSWORD
-Logger.log(PASSWORD)
-const dbURI = `mongodb+srv://my_atlas_user:${PASSWORD}@cluster0.zxqpu.mongodb.net/Loc8r`;
+const PASSWORD = process.env.DB_PASSWORD;
+Logger.log(PASSWORD);
+const dbURI = `mongodb+srv://my_atlas_user:${PASSWORD}@cluster0.zxqpu.mongodb.net/Loc8r?retryWrites=true&w=majority`;
 
 mongoose.connect(dbURI, { useNewUrlParser: true });
 
@@ -48,25 +48,23 @@ process.on("SIGTERM", () => {
   });
 });
 
-interface IWord{
+interface IWord {
   word: string;
   count: number;
 }
-interface IWordDoc extends IWord, Document{
-
-}
-const wordSchema:Schema = new Schema({
-    word: {
-      type: String,
-      unique: true,
-      required: true,
-    },
-    count: {
-      type: Number,
-      default: 1,
-    },
-  });
+interface IWordDoc extends IWord, Document {}
+const wordSchema: Schema = new Schema({
+  word: {
+    type: String,
+    unique: true,
+    required: true,
+  },
+  count: {
+    type: Number,
+    default: 1,
+  },
+});
 
 const Word = model<IWordDoc>("Word", wordSchema);
 
-export {IWord, Word, IWordDoc}
+export { IWord, Word, IWordDoc };

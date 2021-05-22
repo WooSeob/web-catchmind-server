@@ -1,11 +1,14 @@
-import socket_io, { Server } from "socket.io";
-import { Game } from "./gameLogic";
-import { SocketHandler } from "./main";
-import { GameMsg, MSG_KEY } from "./Message";
+import socket_io, { Server, Socket } from "socket.io";
+import { Game } from "../controllers/GameController";
+import { Event } from "../messages/Message";
 
-import mongoose from "mongoose"
-import { Logger } from "./util";
-import { IWord, IWordDoc, Word } from "../models/db"
+import mongoose from "mongoose";
+import { Logger } from "../util";
+import { IWord, IWordDoc, Word } from "./db";
+import { RoomPool } from "./RoomPool";
+import { Room } from "./Room";
+import { SysMsg, SysMsgFactory } from "../messages/SysMsg";
+import { DataMsg } from "../messages/GameData";
 
 export class User {
   constructor(name: string, socketID: string, roomID: string) {
@@ -19,7 +22,8 @@ export class User {
   score: Score;
   socketID: string;
   private roomID: string;
-  private name: string;
+  //TODO user interface와 class를 분리해서 name을 private로 다시 바꿀것
+  public name: string;
   // private socket: socket_io.Socket;
   public setParticipant() {
     this.score.initialize();
@@ -44,10 +48,6 @@ export class User {
 }
 
 // ~가 맞췄습니다 (id, 점수)
-export interface Hit {
-  user: string;
-  score: number;
-}
 
 export interface Command {
   excute(): void;
@@ -59,14 +59,15 @@ export class NoCommand implements Command {
 
 export class MsgSenderCommand implements Command {
   private roomID: string;
-  private Msg: GameMsg;
-  constructor(roomID: string, msg: GameMsg) {
+
+  private Msg: DataMsg;
+  constructor(roomID: string, msg: DataMsg) {
     this.roomID = roomID;
     this.Msg = msg;
   }
   excute(): void {
     // console.log("MsgSenderCommand excuted");
-    SocketHandler.getInstance().sendGameMsg(this.roomID, this.Msg);
+    RoomPool.getInstance().getRoomByID(this.roomID).sendGameMsg(this.Msg);
   }
 }
 
@@ -106,16 +107,54 @@ export class RestoreMsgSenderCmd implements Command {
     this.restoreStateData();
   }
 }
+
+export class WelcomeMsgSender implements Command {
+  private socket: Socket;
+  private room: Room;
+
+  constructor(room: Room, socket: Socket) {
+    this.socket = socket;
+    this.room = room;
+  }
+  excute() {
+    let SysEvent = Event.getInstance().SYS;
+    this.socket.emit(
+      SysEvent.name,
+      SysEvent.msg.USER_WELCOME(this.room.getUsersInfo())
+    );
+  }
+}
+
+export class RoomNotFoundMsgSender implements Command {
+  private socket: Socket;
+
+  constructor(socket: Socket) {
+    this.socket = socket;
+  }
+  excute() {
+    let event = Event.getInstance();
+    this.socket.emit(event.types.SYS_MSG, event.SYS.msg.ROOM_NOT_FOUND({}));
+  }
+}
+
 export interface JoinData {
   roomID: string;
-  user: User;
+  user: {
+    score: {
+      score: number;
+      correct: boolean;
+      turn: boolean;
+    };
+    name: string;
+    isParticipant: boolean;
+  };
 }
 export interface DrawData {
   X: Number;
   Y: Number;
 }
 
-export class WordPool{
+export class WordPool {
   private static words: string[] = [
     "스윙스",
     "래원",
@@ -163,51 +202,51 @@ export class WordPool{
     "고길동",
     "백지",
   ];
-  
-  static addWord(word: string){
-    Logger.log(this.words)
-    WordPool.words.push(word)
-    
-    if(!Word){
-      console.log("mongoose connection null")
+
+  static addWord(word: string) {
+    Logger.log(this.words);
+    WordPool.words.push(word);
+
+    if (!Word) {
+      console.log("mongoose connection null");
       return;
     }
-    Word.findOne({"word": word}, (err, found: IWordDoc)=>{
-      if(err){
-        console.log(err)
+    Word.findOne({ word: word }, (err, found: IWordDoc) => {
+      if (err) {
+        console.log(err);
         return;
       }
-      if(found){
-        found.count = found.count + 1
-        found.save()
-      }else{
+      if (found) {
+        found.count = found.count + 1;
+        found.save();
+      } else {
         Word.create({
           word: word,
-          count: 1
-        })
+          count: 1,
+        });
       }
-    })
+    });
   }
-  
-  static getWordPool(): string[]{
+
+  static getWordPool(): string[] {
     return WordPool.words;
   }
 
-  static getPoolLength(): number{
-    return WordPool.length
+  static getPoolLength(): number {
+    return WordPool.length;
   }
 
-  static getThreeWordsByRandom(): string[]{
+  static getThreeWordsByRandom(): string[] {
     let pool_dup = WordPool.words.slice();
-    Logger.log(pool_dup)
-    let selected: string[] = []
-    
-    for(let i = 0; i < 3; i++){
+    Logger.log(pool_dup);
+    let selected: string[] = [];
+
+    for (let i = 0; i < 3; i++) {
       let randIdx = Math.floor(Math.random() * pool_dup.length);
-      let e = pool_dup.splice(randIdx, 1)
-      selected.push(e[0])
+      let e = pool_dup.splice(randIdx, 1);
+      selected.push(e[0]);
     }
-    return selected
+    return selected;
   }
 }
 export class Score {

@@ -1,195 +1,185 @@
-import { User, DrawData, WordPool } from "../controllers/data";
-import { Game } from "../controllers/gameLogic";
+import {
+  User,
+  DrawData,
+  WordPool,
+  WelcomeMsgSender,
+  RoomNotFoundMsgSender,
+} from "../models/data";
 import { Room } from "../models/Room";
-import socket_io, { Server } from "socket.io";
-import { SocketHandler } from "../controllers/main";
-import { Logger } from "./util";
-export class RoomPool {
-  private Pool: Map<string, Room>;
+import { Socket } from "socket.io";
+import { Logger } from "../util";
+import { RoomPool } from "../models/RoomPool";
+import { JoinData, Score, RestoreMsgSenderCmd } from "../models/data";
+import { Event } from "../messages/Message";
+import { hostChanged, SysMsg } from "../messages/SysMsg";
+import { settingOpt } from "../messages/GameCmd";
+import { chat, ChatMsg } from "../messages/ChatMsg";
 
-  static instance: RoomPool;
-
-  private constructor() {
-    this.Pool = new Map();
-  }
-
-  public static getInstance() {
-    if (!RoomPool.instance) {
-      RoomPool.instance = new RoomPool();
-    }
-    return RoomPool.instance;
-  }
-
-  public createRoom(hostName: string): Room {
-    let roomID: string = (
-      Math.floor(Math.random() * (9999 - 1000)) + 1000
-    ).toString();
-
-    while (this.Pool.has(roomID)) {
-      roomID = (Math.floor(Math.random() * (9999 - 1000)) + 1000).toString();
-    }
-
-    let newRoom: Room = Room.craeteRoomInstance(roomID, hostName);
-    this.Pool.set(roomID, newRoom);
-    return newRoom;
-  }
-
-  public matchMaking(reqUserName: string): Room {
-    if (this.Pool.size > 0) {
-      let matched: Room = null;
-
-      let rooms: Room[] = Array.from(this.Pool.values());
-      rooms.sort((a, b) => {
-        if (a.getUserList().length > b.getUserList().length) {
-          return 1;
-        } else if (a.getUserList().length < b.getUserList().length) {
-          return -1;
-        } else {
-          return 0;
-        }
-      });
-
-      for (let room of rooms) {
-        if (room.isSearchable()) {
-          matched = room;
-          break;
-        }
-      }
-
-      if (matched) {
-        return matched;
-      } else {
-        return this.createRoom(reqUserName);
-      }
-    } else {
-      return this.createRoom(reqUserName);
-    }
-  }
-
-  public getRoomByID(roomID: string): Room {
-    return this.Pool.get(roomID);
-  }
-
-  public deleteRoomByID(roomID: string): boolean {
-    return this.Pool.delete(roomID);
-  }
-}
 export class RoomController {
-  constructor(room: Room) {
-    this.room = room;
-    this.game = this.room.getGame();
-  }
-
+  private user: User;
   private room: Room;
-  private game: Game;
+  private socket: Socket;
 
-  setRoomSearchOpt(b: boolean) {
-    this.room.setSearchable(b);
+  public constructor(socket: Socket) {
+    this.socket = socket;
   }
-  onDrawCmd(drawData: DrawData): void {
-    let io: socket_io.Server = SocketHandler.getInstance().getIo();
 
-    io.sockets.in(this.room.getRoomID()).emit("draw cmd", drawData);
-    // console.log("draw cmd: " + drawData);
-  }
-  onDisconnect(user: User): void {
-    // console.log("user disconnected ", user.getName());
+  public onJoin(joinReq: JoinData): void {
+    // Logger.log("join", joinReqMsg, "from", this.socket.handshake.address);
+    let RoomID = joinReq.roomID;
+    let thisUser = new User(joinReq.user.name, this.socket.id, RoomID);
 
-    if (this.room.getUserList().length == 1) {
-      //마지막 한명이 나가면 방폭
-      RoomPool.getInstance().deleteRoomByID(this.room.getRoomID());
-      Logger.log("Delete Room#", this.room.getRoomID());
-    } else {
-      this.room.getGame().userDisconnect(user);
+    let room = RoomPool.getInstance().getRoomByID(RoomID);
+    if (room) {
+      this.socket.join(RoomID);
 
-      let io: socket_io.Server = SocketHandler.getInstance().getIo();
+      this.user = thisUser;
+      this.room = room;
+      this.room.addUser(thisUser);
 
-      this.room.removeUser(user);
-
-      if (this.room.getHostName() == user.getName()) {
-        //호스트 유저가 나간거였으면 다른사람 호스트 지목
-        this.room.setHostToZeroIDX();
+      //새로 입장한 유저에게 기존 방에 있는 유저들의 정보 전달
+      new WelcomeMsgSender(room, this.socket).excute();
+      if (room.isInGame()) {
+        // inGame 상태면 최신 게임 상태 정보 전달
+        new RestoreMsgSenderCmd(room.getGame(), this.socket).excute();
       }
 
-      let userLeaveData = {
-        type: "user-leave",
-        data: user.getName(),
-      };
-      io.sockets.in(this.room.getRoomID()).emit("sys-msg", userLeaveData);
-    }
-  }
-  onStart(user: User, gameSet: any): void {
-    if (user.getName() == this.room.getHostName() && !this.game.inGame()) {
-      // Logger.log("onStart,", gameSet);
-      this.game.setGame(
-        this.room.getUserList(),
-        gameSet.round,
-        gameSet.timeout
+      //새로운 유저 전달
+      this.room.sendSysMsg(
+        Event.getInstance().SYS.msg.USER_JOIN({
+          name: this.user.getName(),
+        })
       );
-
-      //게임 시작하니까 리스트 전달
-      let io: socket_io.Server = SocketHandler.getInstance().getIo();
-      let userListData = {
-        host: this.room.getHostName(),
-        users: this.room.getUserList().map((u) => u.getName()),
-        participants: this.game.getParticipants().map((u) => u.getName()),
-      };
-      io.sockets.in(this.room.getRoomID()).emit("user-list", userListData);
-
-      this.game.start();
+    } else {
+      // 방을 찾지 못하면 Not Found 메시지 전달
+      new RoomNotFoundMsgSender(this.socket).excute();
     }
   }
-  onGameMsg(user: User, msg: any): void {
-    if (user.isParticipant) {
-      this.game.MsgHandler(user, msg);
+
+  public onDisconnect() {
+    Logger.log("disconnect", this.user);
+    if (this.room && this.user) {
+      // Logger.log(
+      //   "disconnect <",
+      //   this.user.getName(),
+      //   this.socket.handshake.address
+      // );
+      if (this.room.getUserList().length == 1) {
+        //마지막 한명이 나가면 방폭
+        RoomPool.getInstance().deleteRoomByID(this.room.getRoomID());
+        Logger.log("Delete Room#", this.room.getRoomID());
+      } else {
+        if (this.room.isInGame()) {
+          this.room.getGame().userDisconnect(this.user);
+        }
+
+        this.room.removeUser(this.user);
+
+        if (this.room.getHostName() == this.user.getName()) {
+          //호스트 유저가 나간거였으면 다른사람 호스트 지목
+          this.room.setHostToZeroIDX();
+        }
+
+        this.room.sendSysMsg(
+          Event.getInstance().SYS.msg.USER_LEAVE({
+            name: this.user.getName(),
+          })
+        );
+      }
+    } else {
+      Logger.log("onDisconnecte Called but no room");
     }
   }
-  onJoin(user: User): void {
-    // 전달받은 클라이언트 정보를 저장
-    // console.log(socket);
-    let io: socket_io.Server = SocketHandler.getInstance().getIo();
+  public onGameCmd(msg) {
+    if (this.room) {
+      // Logger.log(
+      //   "chat-cmd <",
+      //   this.user.getName(),
+      //   msg,
+      //   this.socket.handshake.address
+      // );
+      let event = Event.getInstance();
+      if (msg.type == event.GAME_CMD.types.START_GAME) {
+        console.log("game start.");
+        let startInfo: settingOpt = msg.data;
 
-    // console.log(user.getName(), " has joined");
-    this.room.addUser(user);
-
-    //새로운 유저 전달
-    let userJoinData = {
-      type: "user-join",
-      data: user.getName(),
-    };
-    io.sockets.in(this.room.getRoomID()).emit("sys-msg", userJoinData);
-  }
-
-  onChat(user: User, msg: string): void {
-    if (msg != "") {
-      let io: socket_io.Server = SocketHandler.getInstance().getIo();
-      let broadcastMsg = {
-        from: user.getName(),
-        data: msg,
-      };
-
-      io.sockets.in(this.room.getRoomID()).emit("chat-msg", broadcastMsg);
-
-      if (msg.startsWith("/")) {
-        // console.log("command detect");
-        // Logger.log("command detected", user, msg)
-        let command = msg.split(" ")[0];
-        let target = msg.split(" ")[1];
-        if (command == "/add") {
-          // console.log("command detect");
-          WordPool.addWord(target);
-        } else if (command == "/kick") {
-          this.room.getUserList().forEach((user) => {
-            if (user.getName() == target) {
-              // console.log("kick msg send");
-              // console.log(user);
-              io.sockets.sockets
-                .get(user.socketID)
-                .emit("sys-msg", { type: "kick" });
-            }
-          });
+        //roomController2.onStart(User, any)
+        if (
+          this.user.getName() == this.room.getHostName() &&
+          !this.room.isInGame()
+        ) {
+          //게임 시작
+          // Logger.log("onStart,", gameSet);
+          this.room.setGame(startInfo);
+          this.room.getGame().start();
         }
       }
+    }
+  }
+  public onGameMsg(msg) {
+    if (this.room) {
+      // Logger.log(
+      //   "game-msg <",
+      //   this.user.getName(),
+      //   msg,
+      //   this.socket.handshake.address
+      // );
+
+      if (this.user.isParticipant) {
+        this.room.getGame().MsgHandler(this.user, msg);
+      }
+    }
+  }
+  public onDrawCmd(msg: DrawData) {
+    if (this.room) {
+      if (this.user.isParticipant) {
+        this.room.getGame().MsgHandler(this.user, msg);
+      }
+    }
+  }
+  public onChatMsg(msg) {
+    if (this.room) {
+      // Logger.log(
+      //   "chat-msg <",
+      //   this.user.getName(),
+      //   msg,
+      //   this.socket.handshake.address
+      // );
+      let user = this.user;
+      if (msg != "") {
+        let data: chat = msg.data;
+        if (data.from.name != user.getName()) {
+          console.log("채팅 메시지 송신인이 조작됨");
+          return;
+        }
+
+        this.room.sendChatMsg(
+          Event.getInstance().CHAT.msg.CHAT({
+            from: user,
+            body: data.body,
+          })
+        );
+
+        if (data.body.startsWith("/")) {
+          let command = msg.split(" ")[0];
+          let target = msg.split(" ")[1];
+          if (command == "/add") {
+            // console.log("command detect");
+            WordPool.addWord(target);
+          }
+        }
+      }
+    }
+  }
+  public onSearchOpt(opt: boolean) {
+    if (this.room) {
+      // Logger.log(
+      //   "searchOpt <",
+      //   this.user.getName(),
+      //   opt,
+      //   this.socket.handshake.address
+      // );
+      this.room.setSearchable(opt);
     }
   }
 }

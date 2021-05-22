@@ -1,19 +1,25 @@
 #!/usr/bin/env node
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Module dependencies.
  */
-var Application = require("./app");
+const app_1 = __importDefault(require("./app"));
+var app = new app_1.default();
+var Application = app.application;
 var debug = require("debug")("catchmind:server");
-var app = Application.app;
 /**
  * Get port from environment and store in Express.
  */
 var port = normalizePort(process.env.PORT || "9999");
-app.set("port", port);
+Application.set("port", port);
 /**
  * Create HTTP server.
  */
-var server = Application.httpServer;
+var server = app.http;
 /**
  * Listen on provided port, on all network interfaces.
  */

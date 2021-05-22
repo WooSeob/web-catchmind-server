@@ -3,22 +3,26 @@
 /**
  * Module dependencies.
  */
+import App from "./app";
 
-var Application = require("./app");
+var app = new App();
+
+var Application = app.application;
+
 var debug = require("debug")("catchmind:server");
-var app = Application.app;
 
 /**
  * Get port from environment and store in Express.
  */
 
 var port = normalizePort(process.env.PORT || "9999");
-app.set("port", port);
+
+Application.set("port", port);
 
 /**
  * Create HTTP server.
  */
-var server = Application.httpServer;
+var server = app.http;
 
 /**
  * Listen on provided port, on all network interfaces.

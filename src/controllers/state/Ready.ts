@@ -1,6 +1,6 @@
 import { State } from "./State";
-import { User } from "../data";
-import { StateType } from "../Message";
+import { User } from "../../models/data";
+import { StateTypes } from "../../messages/Message";
 export class Ready extends State {
   TurnDo(user: User, msg: any): void {
     //NOTHING
@@ -15,5 +15,5 @@ export class Ready extends State {
     // NOTHING
   }
   private score: Map<String, number>;
-  public readonly Type: StateType = StateType.ready;
+  public readonly Type: StateTypes = StateTypes.ready;
 }

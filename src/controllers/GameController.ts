@@ -1,29 +1,29 @@
-import {
-  User,
-  Command,
-  NoCommand,
-  MsgSenderCommand,
-  Hit,
-} from "./data";
-import { SocketHandler } from "./main";
-import socket_io, { Server } from "socket.io";
+import { User, Command, NoCommand, MsgSenderCommand } from "../models/data";
 import { Ready } from "./state/Ready";
 import { Prepare } from "./state/Prepare";
 import { State } from "./state/State";
-import { Logger, PlayerQueue } from "./util";
+import { Logger } from "../util";
+import { PlayerQueue } from "../models/PlayerQueue";
 import { Guessing } from "./state/Guessing";
 import { Resulting } from "./state/Resulting";
-import { GameMsg, MSG_KEY } from "./Message";
+import { Room } from "../models/Room";
+import { Event } from "../messages/Message";
+import { DataMsg, userHit } from "../messages/GameData";
 
 export class Game {
-  constructor(roomID: string) {
-    this.roomID = roomID;
+  constructor(room: Room) {
+    this.room = room;
+    this.roomID = room.getRoomID();
     this.ready = new Ready(this);
     this.prepare = new Prepare(this);
     this.guess = new Guessing(this);
     this.result = new Resulting(this);
     this.state = this.ready;
+
+    this.event = Event.getInstance();
   }
+  private event: Event;
+  private room: Room;
   private roomID: string;
   private EndRound: number;
   private currentRound: number = 1;
@@ -41,8 +41,8 @@ export class Game {
   private guess: State;
   private result: State;
 
-  private log(msg: string, etc: any = "") {
-    console.log("Game : ", msg, etc);
+  public getRoom(): Room {
+    return this.room;
   }
   public increaseRound() {
     this.currentRound++;
@@ -78,7 +78,12 @@ export class Game {
     Logger.log("Transition ", state.Type);
     this.state.clearTimer();
     this.state = state;
-    SocketHandler.getInstance().sendGameSync(this.roomID, this.state.Type);
+
+    this.room.sendGameSync(
+      this.event.GAME_CMD.msg.STATE_CHANGED({
+        newState: this.state.Type,
+      })
+    );
 
     hook.excute();
     this.state.onActivated();
@@ -101,6 +106,7 @@ export class Game {
       this.currentRound = 1;
 
       this.guess.setTimeOut(timePerTurn);
+      Logger.log("GameController.setGame()", timePerTurn);
       this.isGameReady = true;
     }
   }
@@ -124,20 +130,21 @@ export class Game {
     this.participants = new PlayerQueue();
 
     //게임 오버 메시지
-    let gameResult: Hit[] = [];
+    let gameResult: userHit[] = [];
     this.getParticipants().map((user) => {
-      let hitData: Hit = {
+      let hitData: userHit = {
         user: user.getName(),
         score: user.score.getScore(),
       };
       gameResult.push(hitData);
     });
 
-    let finishMsg: GameMsg = {
-      key: MSG_KEY.GAME_RESULT,
-      value: gameResult,
-    };
-    let finishMsgSender = new MsgSenderCommand(this.roomID, finishMsg);
+    let finishMsgSender = new MsgSenderCommand(
+      this.roomID,
+      this.event.GAME_DATA.msg.GAME_RESULT({
+        result: gameResult,
+      })
+    );
 
     this.setState(this.getReadyState(), finishMsgSender);
   }
@@ -150,10 +157,9 @@ export class Game {
       this.turn = this.participants.getHead();
 
       //게임 스타트 메시지
-      let startMsg: GameMsg = {
-        key: MSG_KEY.START,
-        value: this.participants.getAllList().map((u) => u.getName()),
-      };
+      let startMsg: DataMsg = this.event.GAME_DATA.msg.START({
+        users: this.participants.getAllList().map((u) => u.getName()),
+      });
       let startMsgSender = new MsgSenderCommand(this.roomID, startMsg);
 
       // 스테이트 전환
@@ -196,11 +202,9 @@ export class Game {
         this.setState(this.result);
         // this.transitionByTimeOut();
         // 게임종료 브로드캐스트
-        let taljuMsg: GameMsg = {
-          key: MSG_KEY.ONLY_ONE_PLAYER,
-          value: null,
-        };
-        SocketHandler.getInstance().sendGameMsg(this.roomID, taljuMsg);
+
+        let taljuMsg: DataMsg = this.event.GAME_DATA.msg.ONLY_ONE_PLAYER({});
+        this.room.sendGameMsg(taljuMsg);
       }
 
       if (isTurnPlayerLeft) {
@@ -209,12 +213,11 @@ export class Game {
         this.setState(this.result);
         // this.transitionByTimeOut();
 
+        let taljuMsg: DataMsg = this.event.GAME_DATA.msg.TURN_USER_LEFT({
+          user: user.getName(),
+        });
         // 턴유저 나간거 브로드캐스트
-        let taljuMsg: GameMsg = {
-          key: MSG_KEY.TURN_USER_LEFT,
-          value: user.getName(),
-        };
-        SocketHandler.getInstance().sendGameMsg(this.roomID, taljuMsg);
+        this.room.sendGameMsg(taljuMsg);
       }
     }
   }
