@@ -10,7 +10,7 @@ import { Room } from "../models/Room";
 import { Event } from "../messages/Message";
 import { DataMsg, userHit } from "../messages/GameData";
 
-export class Game {
+export class GameService {
   constructor(room: Room) {
     this.room = room;
     this.roomID = room.getRoomID();

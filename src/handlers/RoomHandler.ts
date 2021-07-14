@@ -1,12 +1,12 @@
 import { Socket } from "socket.io";
-import { RoomController } from "../controllers/RoomController";
+import { RoomService } from "../services/RoomService";
 import { Event } from "../messages/Message";
 
 export class RoomHandler {
   private static readonly PREFIX = "ROOM.";
 
   public static set(socket: Socket) {
-    let roomCtlr: RoomController = new RoomController(socket);
+    let roomCtlr: RoomService = new RoomService(socket);
     let EventTypes = Event.getInstance().types;
 
     socket.on(RoomHandler.PREFIX + "join", roomCtlr.onJoin.bind(roomCtlr));

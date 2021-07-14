@@ -1,5 +1,5 @@
 import socket_io, { Server, Socket } from "socket.io";
-import { Game } from "../controllers/GameController";
+import { GameService } from "../services/GameService";
 import { Event } from "../messages/Message";
 
 import mongoose from "mongoose";
@@ -72,9 +72,9 @@ export class MsgSenderCommand implements Command {
 }
 
 export class RestoreMsgSenderCmd implements Command {
-  private game: Game;
+  private game: GameService;
   private socket;
-  constructor(game: Game, socket) {
+  constructor(game: GameService, socket) {
     this.game = game;
     this.socket = socket;
   }

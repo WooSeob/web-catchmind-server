@@ -1,6 +1,6 @@
 import { Socket, Server } from "socket.io";
 import { User, JoinData, DrawData, Score } from "./data";
-import { Game } from "../controllers/GameController";
+import { GameService } from "../services/GameService";
 
 import { Logger } from "../util";
 import { Event } from "../messages/Message";
@@ -56,14 +56,14 @@ export class Room {
   private hostName: string;
   private userList: User[] = [];
 
-  private game: Game;
+  private game: GameService;
 
   private getRoomServer(): Server {
     return Room.io.to(this.roomID);
   }
   public setGame(info: settingOpt) {
     Logger.log("Room.setGame()", info);
-    this.game = new Game(this);
+    this.game = new GameService(this);
     this.game.setGame(this.getUserList(), info.round, info.timeout);
   }
   public isSearchable() {
@@ -72,7 +72,7 @@ export class Room {
   public setSearchable(b: boolean) {
     this.Searchable = b;
   }
-  public getGame(): Game {
+  public getGame(): GameService {
     return this.game;
   }
   public getRoom() {}

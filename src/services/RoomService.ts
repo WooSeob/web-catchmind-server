@@ -15,7 +15,7 @@ import { hostChanged, SysMsg } from "../messages/SysMsg";
 import { settingOpt } from "../messages/GameCmd";
 import { chat, ChatMsg } from "../messages/ChatMsg";
 
-export class RoomController {
+export class RoomService {
   private user: User;
   private room: Room;
   private socket: Socket;

@@ -2,7 +2,7 @@ import { RoomPool } from "../models/RoomPool";
 import { Room } from "../models/Room";
 import { Socket } from "socket.io";
 
-export class LobbyController {
+export class LobbyService {
   private socket: Socket;
   public constructor(socket: Socket) {
     this.socket = socket;
