@@ -2,13 +2,10 @@ import socket_io, { Server, Socket } from "socket.io";
 import { GameService } from "../services/GameService";
 import { Event } from "../messages/Message";
 
-import mongoose from "mongoose";
 import { Logger } from "../util";
 import { IWord, IWordDoc, Word } from "./db";
-import { RoomPool } from "./RoomPool";
-import { Room } from "./Room";
-import { SysMsg, SysMsgFactory } from "../messages/SysMsg";
-import { DataMsg } from "../messages/GameData";
+import { RoomModel } from "./RoomModel";
+import { GameModel } from "./GameModel";
 
 export class User {
   constructor(name: string, socketID: string, roomID: string) {
@@ -60,30 +57,30 @@ export class NoCommand implements Command {
 export class MsgSenderCommand implements Command {
   private roomID: string;
 
-  private Msg: DataMsg;
-  constructor(roomID: string, msg: DataMsg) {
+  // private Msg: DataMsg;
+  constructor(roomID: string) {
     this.roomID = roomID;
-    this.Msg = msg;
+    // this.Msg = msg;
   }
   excute(): void {
     // console.log("MsgSenderCommand excuted");
-    RoomPool.getInstance().getRoomByID(this.roomID).sendGameMsg(this.Msg);
+    // RoomPool.getInstance().getRoomByID(this.roomID).sendGameMsg(this.Msg);
   }
 }
 
 export class RestoreMsgSenderCmd implements Command {
-  private game: GameService;
+  private gameModel: GameModel;
   private socket;
-  constructor(game: GameService, socket) {
-    this.game = game;
+  constructor(gameModel: GameModel, socket) {
+    this.gameModel = gameModel;
     this.socket = socket;
   }
 
   private restoreState() {
-    this.socket.emit("game-sync", this.game.getState().Type);
+    this.socket.emit("game-sync", this.gameModel.getState().Type);
   }
   private restoreStateData() {
-    this.socket.emit("game-msg", this.game.getState().getMsg());
+    // this.socket.emit("game-msg", this.gameModel.getState().getMsg());
   }
   private restoreParticipants() {
     // 현재 참여자들 전송
@@ -110,18 +107,18 @@ export class RestoreMsgSenderCmd implements Command {
 
 export class WelcomeMsgSender implements Command {
   private socket: Socket;
-  private room: Room;
+  private roomModel: RoomModel;
 
-  constructor(room: Room, socket: Socket) {
+  constructor(roomModel: RoomModel, socket: Socket) {
     this.socket = socket;
-    this.room = room;
+    this.roomModel = roomModel;
   }
   excute() {
-    let SysEvent = Event.getInstance().SYS;
-    this.socket.emit(
-      SysEvent.name,
-      SysEvent.msg.USER_WELCOME(this.room.getUsersInfo())
-    );
+    // let SysEvent = Event.getInstance().SYS;
+    // this.socket.emit(
+    //   SysEvent.name,
+    //   SysEvent.msg.USER_WELCOME(this.roomModel.getUsersInfo())
+    // );
   }
 }
 
@@ -133,7 +130,7 @@ export class RoomNotFoundMsgSender implements Command {
   }
   excute() {
     let event = Event.getInstance();
-    this.socket.emit(event.types.SYS_MSG, event.SYS.msg.ROOM_NOT_FOUND({}));
+    // this.socket.emit(event.types.SYS_MSG, event.SYS.msg.ROOM_NOT_FOUND({}));
   }
 }
 

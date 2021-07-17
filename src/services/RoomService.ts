@@ -5,19 +5,19 @@ import {
   WelcomeMsgSender,
   RoomNotFoundMsgSender,
 } from "../models/data";
-import { Room } from "../models/Room";
 import { Socket } from "socket.io";
 import { Logger } from "../util";
 import { RoomPool } from "../models/RoomPool";
-import { JoinData, Score, RestoreMsgSenderCmd } from "../models/data";
-import { Event } from "../messages/Message";
-import { hostChanged, SysMsg } from "../messages/SysMsg";
-import { settingOpt } from "../messages/GameCmd";
-import { chat, ChatMsg } from "../messages/ChatMsg";
-
+import { JoinData, RestoreMsgSenderCmd } from "../models/data";
+import { MessageService } from "./MessageService";
+import { RoomModel } from "../models/RoomModel";
+import { GameService } from "./GameService";
+import { event_game_cmd_types, settingOpt } from "../messages/CommandMessage";
 export class RoomService {
   private user: User;
-  private room: Room;
+  private roomModel: RoomModel;
+  private gameService: GameService;
+  private messageService: MessageService;
   private socket: Socket;
 
   public constructor(socket: Socket) {
@@ -25,31 +25,39 @@ export class RoomService {
   }
 
   public onJoin(joinReq: JoinData): void {
-    // Logger.log("join", joinReqMsg, "from", this.socket.handshake.address);
     let RoomID = joinReq.roomID;
     let thisUser = new User(joinReq.user.name, this.socket.id, RoomID);
 
-    let room = RoomPool.getInstance().getRoomByID(RoomID);
+    let room: RoomModel = RoomPool.getInstance().getRoomByID(RoomID);
     if (room) {
       this.socket.join(RoomID);
 
+      this.messageService = new MessageService(RoomModel.io.to(RoomID));
+
       this.user = thisUser;
-      this.room = room;
-      this.room.addUser(thisUser);
+
+      this.roomModel = room;
+      this.roomModel.addUser(thisUser);
+      this.roomModel.getGameModel().setStates(this.messageService);
+
+      this.gameService = new GameService(
+        this.messageService,
+        this.roomModel.getGameModel()
+      );
 
       //새로 입장한 유저에게 기존 방에 있는 유저들의 정보 전달
       new WelcomeMsgSender(room, this.socket).excute();
+
       if (room.isInGame()) {
         // inGame 상태면 최신 게임 상태 정보 전달
-        new RestoreMsgSenderCmd(room.getGame(), this.socket).excute();
+        new RestoreMsgSenderCmd(
+          this.roomModel.getGameModel(),
+          this.socket
+        ).excute();
       }
 
       //새로운 유저 전달
-      this.room.sendSysMsg(
-        Event.getInstance().SYS.msg.USER_JOIN({
-          name: this.user.getName(),
-        })
-      );
+      this.messageService.systemMessage.joinUser(this.user);
     } else {
       // 방을 찾지 못하면 Not Found 메시지 전달
       new RoomNotFoundMsgSender(this.socket).excute();
@@ -58,109 +66,81 @@ export class RoomService {
 
   public onDisconnect() {
     Logger.log("disconnect", this.user);
-    if (this.room && this.user) {
-      // Logger.log(
-      //   "disconnect <",
-      //   this.user.getName(),
-      //   this.socket.handshake.address
-      // );
-      if (this.room.getUserList().length == 1) {
+    if (this.roomModel && this.user) {
+      if (this.roomModel.getUserList().length == 1) {
         //마지막 한명이 나가면 방폭
-        RoomPool.getInstance().deleteRoomByID(this.room.getRoomID());
-        Logger.log("Delete Room#", this.room.getRoomID());
+        RoomPool.getInstance().deleteRoomByID(this.roomModel.getRoomID());
+        Logger.log("Delete Room#", this.roomModel.getRoomID());
       } else {
-        if (this.room.isInGame()) {
-          this.room.getGame().userDisconnect(this.user);
+        if (this.roomModel.isInGame()) {
+          this.gameService.userDisconnect(this.user);
         }
 
-        this.room.removeUser(this.user);
+        this.roomModel.removeUser(this.user);
 
-        if (this.room.getHostName() == this.user.getName()) {
+        if (this.roomModel.getHostName() == this.user.getName()) {
           //호스트 유저가 나간거였으면 다른사람 호스트 지목
-          this.room.setHostToZeroIDX();
+          this.roomModel.setHostToZeroIDX();
+          this.messageService.systemMessage.changedHost(
+            this.roomModel.getHostName()
+          );
         }
 
-        this.room.sendSysMsg(
-          Event.getInstance().SYS.msg.USER_LEAVE({
-            name: this.user.getName(),
-          })
-        );
+        this.messageService.systemMessage.leaveUser(this.user);
       }
     } else {
-      Logger.log("onDisconnecte Called but no room");
+      Logger.log("onDisconnecte Called but no roomModel");
     }
   }
   public onGameCmd(msg) {
-    if (this.room) {
-      // Logger.log(
-      //   "chat-cmd <",
-      //   this.user.getName(),
-      //   msg,
-      //   this.socket.handshake.address
-      // );
-      let event = Event.getInstance();
-      if (msg.type == event.GAME_CMD.types.START_GAME) {
+    if (this.roomModel) {
+      if (msg.type == event_game_cmd_types.START_GAME) {
         console.log("game start.");
         let startInfo: settingOpt = msg.data;
 
         //roomController2.onStart(User, any)
         if (
-          this.user.getName() == this.room.getHostName() &&
-          !this.room.isInGame()
+          this.user.getName() == this.roomModel.getHostName() &&
+          !this.roomModel.isInGame()
         ) {
           //게임 시작
           // Logger.log("onStart,", gameSet);
-          this.room.setGame(startInfo);
-          this.room.getGame().start();
+          this.gameService.setGame(
+            this.roomModel.getUserList(),
+            startInfo.round,
+            startInfo.timeout
+          );
+          this.gameService.start();
         }
       }
     }
   }
   public onGameMsg(msg) {
-    if (this.room) {
-      // Logger.log(
-      //   "game-msg <",
-      //   this.user.getName(),
-      //   msg,
-      //   this.socket.handshake.address
-      // );
-
+    if (this.roomModel) {
       if (this.user.isParticipant) {
-        this.room.getGame().MsgHandler(this.user, msg);
+        this.gameService.MsgHandler(this.user, msg);
       }
     }
   }
   public onDrawCmd(msg: DrawData) {
-    if (this.room) {
+    if (this.roomModel) {
       if (this.user.isParticipant) {
-        this.room.getGame().MsgHandler(this.user, msg);
+        this.gameService.MsgHandler(this.user, msg);
       }
     }
   }
   public onChatMsg(msg) {
-    if (this.room) {
-      // Logger.log(
-      //   "chat-msg <",
-      //   this.user.getName(),
-      //   msg,
-      //   this.socket.handshake.address
-      // );
+    if (this.roomModel) {
       let user = this.user;
       if (msg != "") {
-        let data: chat = msg.data;
-        if (data.from.name != user.getName()) {
+        if (msg.data.from.name != user.getName()) {
           console.log("채팅 메시지 송신인이 조작됨");
           return;
         }
 
-        this.room.sendChatMsg(
-          Event.getInstance().CHAT.msg.CHAT({
-            from: user,
-            body: data.body,
-          })
-        );
+        this.messageService.chatMessage.chat(user, msg.data.body);
 
-        if (data.body.startsWith("/")) {
+        if (msg.data.body.startsWith("/")) {
           let command = msg.split(" ")[0];
           let target = msg.split(" ")[1];
           if (command == "/add") {
@@ -172,14 +152,8 @@ export class RoomService {
     }
   }
   public onSearchOpt(opt: boolean) {
-    if (this.room) {
-      // Logger.log(
-      //   "searchOpt <",
-      //   this.user.getName(),
-      //   opt,
-      //   this.socket.handshake.address
-      // );
-      this.room.setSearchable(opt);
+    if (this.roomModel) {
+      this.roomModel.setSearchable(opt);
     }
   }
 }

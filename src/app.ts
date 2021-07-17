@@ -3,8 +3,6 @@ import createError from "http-errors";
 import { Server, Socket } from "socket.io";
 import path from "path";
 import { ApiRouter } from "./api/routes";
-import { Logger } from "./util";
-import mongoose from "mongoose";
 import { RoomHandler } from "./handlers/RoomHandler";
 import { LobbyHandler } from "./handlers/LobbyHandler";
 import { RoomPool } from "./models/RoomPool";

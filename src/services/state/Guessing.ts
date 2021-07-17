@@ -1,8 +1,6 @@
 import { State } from "./State";
 import { User } from "../../models/data";
 import { StateTypes } from "../../messages/Message";
-import { DataMsg } from "../../messages/GameData";
-import { DrawMsg } from "../../messages/DrawCmd";
 
 export class Guessing extends State {
   // 1. 모든 플레이어가 맞췄을때
@@ -17,10 +15,8 @@ export class Guessing extends State {
   }
   onActivated() {
     //확정된 제시어 전송
-    this.initMsg = this.event.GAME_DATA.msg.COMMITTED_WORD({
-      word: this.word,
-    });
-    this.room.sendGameMsg(this.initMsg);
+    // this.initMsg = this.word
+    this.messageService.dataMessage.commitWord(this.word);
 
     this.timer();
   }
@@ -31,12 +27,12 @@ export class Guessing extends State {
     // Result 스테이트로 변경
 
     this.clearTimer();
-    this.game.setState(this.game.getResultState());
-    this.game.transitionByTimeOut();
+    this.gameModel.setState(StateTypes.result);
+    this.transitionByTimeOut();
   }
 
-  TurnDo(user: User, msg: DrawMsg): void {
-    this.room.sendDrawCmd(msg);
+  TurnDo(user: User, msg): void {
+    this.messageService.drawMessage.draw();
   }
 
   NotTurnDo(user: User, msg: any): void {
@@ -52,11 +48,11 @@ export class Guessing extends State {
 
       console.log(user.getName() + "가 맞췄습니다.");
 
-      let hitMsg: DataMsg = this.event.GAME_DATA.msg.USER_HIT({
-        user: user.getName(),
-        score: PLUS_SCORE,
-      });
-      this.room.sendGameMsg(hitMsg);
+      // {
+      //   user: user.getName(),
+      //   score: PLUS_SCORE
+      // }
+      this.messageService.dataMessage.userHit();
 
       //TODO 모든 유저가 맞췄을떄 바로 트랜지션 추가할것
     }

@@ -1,5 +1,5 @@
 import { RoomPool } from "../models/RoomPool";
-import { Room } from "../models/Room";
+import { RoomModel } from "../models/RoomModel";
 import { Socket } from "socket.io";
 
 export class LobbyService {
@@ -10,14 +10,14 @@ export class LobbyService {
 
   public onCreateRoom(createReqMsg) {
     let roomPool: RoomPool = RoomPool.getInstance();
-    let newRoom: Room = roomPool.createRoom(createReqMsg.uid);
-    this.socket.emit("LOBBY.create-room", newRoom.getRoomID());
+    let newRoomModel: RoomModel = roomPool.createRoom(createReqMsg.uid);
+    this.socket.emit("LOBBY.create-room", newRoomModel.getRoomID());
   }
 
   public onSearchRoom(searchReqMsg) {
     let roomPool: RoomPool = RoomPool.getInstance();
-    let matchedRoom: Room = roomPool.matchMaking(searchReqMsg.uid);
-    this.socket.emit("LOBBY.search-room", matchedRoom.getRoomID());
+    let matchedRoomModel: RoomModel = roomPool.matchMaking(searchReqMsg.uid);
+    this.socket.emit("LOBBY.search-room", matchedRoomModel.getRoomID());
   }
 
   public onJoin(joinReqMsg) {}

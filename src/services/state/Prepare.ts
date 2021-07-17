@@ -4,7 +4,6 @@ import { WordPool } from "../../models/data";
 import { Guessing } from "./Guessing";
 import { Logger } from "../../util";
 import { StateTypes } from "../../messages/Message";
-import { DataMsg } from "../../messages/GameData";
 
 // 단어 3개, 턴 유저, 라운드
 interface PrepareData {
@@ -28,12 +27,12 @@ export class Prepare extends State {
 
     console.log(this.words);
 
-    this.initMsg = this.event.GAME_DATA.msg.NEW_TURN({
-      words: this.words,
-      turn: this.game.getTurnName(),
-      round: this.game.getCurrentRound(),
-    });
-    this.room.sendGameMsg(this.initMsg);
+    // this.initMsg = ???
+    this.messageService.dataMessage.newTurn(
+      this.words,
+      this.gameModel.getTurnName(),
+      this.gameModel.getCurrentRound()
+    );
 
     this.timer();
   }
@@ -48,14 +47,17 @@ export class Prepare extends State {
     this.selectedWord = this.words[msg];
 
     // 타이머 리셋 & Guess 스테이트로 변경
-    this.game.clearTransitionTimer();
+    this.gameModel.clearTransitionTimer();
 
-    let Next: Guessing = this.game.getGuessState() as Guessing;
-    Next.setWord(this.selectedWord);
+    let guessState: Guessing = this.gameModel.getStateByType(
+      StateTypes.guess
+    ) as Guessing;
+    guessState.setWord(this.selectedWord);
 
     clearInterval(this.RemainTimeTimer);
-    this.game.setState(Next);
-    this.game.transitionByTimeOut();
+
+    this.setState(StateTypes.guess);
+    this.transitionByTimeOut();
   }
 
   notifyTimer() {
@@ -66,12 +68,14 @@ export class Prepare extends State {
     this.selectedWord = this.words[randIdx];
 
     // Guess 스테이트로 변경
-    let Next: Guessing = this.game.getGuessState() as Guessing;
+    let Next: Guessing = this.gameModel.getStateByType(
+      StateTypes.guess
+    ) as Guessing;
     Next.setWord(this.selectedWord);
 
     clearInterval(this.RemainTimeTimer);
-    this.game.setState(Next);
-    this.game.transitionByTimeOut();
+    this.setState(StateTypes.guess);
+    this.transitionByTimeOut();
   }
 
   // Case3. 해당 턴 플레이어가 Prepare 단계에서 퇴장했을때. -> 인터럽트 처리

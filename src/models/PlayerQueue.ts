@@ -1,4 +1,3 @@
-import { Room } from "./Room";
 import { User } from "./data";
 
 export class PlayerQueue {

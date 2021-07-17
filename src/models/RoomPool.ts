@@ -1,9 +1,9 @@
 import { Server } from "socket.io";
 import { Logger } from "../util";
-import { Room } from "./Room";
+import { RoomModel } from "./RoomModel";
 
 export class RoomPool {
-  private Pool: Map<string, Room>;
+  private Pool: Map<string, RoomModel>;
 
   public static server: Server;
   static instance: RoomPool;
@@ -13,7 +13,7 @@ export class RoomPool {
   }
 
   public static setServer(IOserver: Server) {
-    Room.io = IOserver;
+    RoomModel.io = IOserver;
   }
   public static getInstance() {
     if (!RoomPool.instance) {
@@ -22,7 +22,7 @@ export class RoomPool {
     return RoomPool.instance;
   }
 
-  public createRoom(hostName: string): Room {
+  public createRoom(hostName: string): RoomModel {
     let roomID: string = (
       Math.floor(Math.random() * (9999 - 1000)) + 1000
     ).toString();
@@ -31,17 +31,17 @@ export class RoomPool {
       roomID = (Math.floor(Math.random() * (9999 - 1000)) + 1000).toString();
     }
 
-    let newRoom: Room = Room.craeteRoomInstance(roomID, hostName);
+    let newRoom: RoomModel = RoomModel.craeteRoomInstance(roomID, hostName);
     this.Pool.set(roomID, newRoom);
     Logger.log("room", newRoom, "created");
     return newRoom;
   }
 
-  public matchMaking(reqUserName: string): Room {
+  public matchMaking(reqUserName: string): RoomModel {
     if (this.Pool.size > 0) {
-      let matched: Room = null;
+      let matched: RoomModel = null;
 
-      let rooms: Room[] = Array.from(this.Pool.values());
+      let rooms: RoomModel[] = Array.from(this.Pool.values());
       rooms.sort((a, b) => {
         if (a.getUserList().length > b.getUserList().length) {
           return 1;
@@ -69,7 +69,7 @@ export class RoomPool {
     }
   }
 
-  public getRoomByID(roomID: string): Room {
+  public getRoomByID(roomID: string): RoomModel {
     return this.Pool.get(roomID);
   }
 

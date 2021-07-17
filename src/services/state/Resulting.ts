@@ -1,7 +1,6 @@
 import { State } from "./State";
 import { User } from "../../models/data";
 import { Logger } from "../../util";
-import { userHit } from "../../messages/GameData";
 import { StateTypes } from "../../messages/Message";
 
 export class Resulting extends State {
@@ -18,21 +17,17 @@ export class Resulting extends State {
 
   public onActivated() {
     // 결과 종합
-    let turnResult: userHit[] = [];
-    for (let user of this.game.getParticipants()) {
-      let hitData: userHit = {
-        user: user.getName(),
-        score: user.score.getScore(),
-      };
-      turnResult.push(hitData);
-    }
+    // let turnResult: userHit[] = [];
+    // for (let user of this.gameModel.getParticipants()) {
+    //   let hitData: userHit = {
+    //     user: user.getName(),
+    //     score: user.score.getScore(),
+    //   };
+    //   turnResult.push(hitData);
+    // }
 
     // 해당 턴 결과 전송
-    this.initMsg = this.event.GAME_DATA.msg.TURN_RESULT({
-      result: turnResult,
-    });
-
-    this.room.sendGameMsg(this.initMsg);
+    this.messageService.dataMessage.turnResult();
     this.timer();
   }
 
@@ -42,32 +37,35 @@ export class Resulting extends State {
   }
 
   private transition() {
-    this.game.selectNextTurn();
+    this.selectNextTurn();
 
-    if (this.game.isRoundFinished()) {
+    if (this.gameModel.isRoundFinished()) {
       Logger.log("unit Round finished");
 
-      this.game.increaseRound();
-      if (this.game.isGameEnd() || this.game.getParticipants().length < 2) {
+      this.gameModel.increaseRound();
+      if (
+        this.gameModel.isGameEnd() ||
+        this.gameModel.getParticipants().length < 2
+      ) {
         //게임 종료
-        this.game.clearGame();
+        this.clearGame();
       } else {
         //다음 라운드로
-        for (let user of this.game.getParticipants()) {
+        for (let user of this.gameModel.getParticipants()) {
           user.score.turnClear();
         }
 
-        this.game.setState(this.game.getPrepareState());
-        this.game.transitionByTimeOut();
+        this.gameModel.setState(StateTypes.prepare);
+        this.transitionByTimeOut();
       }
     } else {
       //다음 턴으로
-      for (let user of this.game.getParticipants()) {
+      for (let user of this.gameModel.getParticipants()) {
         user.score.turnClear();
       }
 
-      this.game.setState(this.game.getPrepareState());
-      this.game.transitionByTimeOut();
+      this.gameModel.setState(StateTypes.prepare);
+      this.transitionByTimeOut();
     }
   }
 }
